@@ -31,6 +31,8 @@ yarn-error.log*
 .pnpm-debug.log*
 dev-server.log
 dev-server.err.log
+local-dashboard.log
+local-dashboard.err.log
 nul
 
 # env files (can opt-in for committing if needed)
@@ -42,3 +44,5 @@ nul
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.vercel
