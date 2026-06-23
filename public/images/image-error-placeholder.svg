@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" fill="#FFFFFF"/>
+  <!-- 이미지 프레임 -->
+  <rect x="40" y="40" width="120" height="120" rx="8" stroke="#9CA3AF" stroke-width="2"/>
+  <!-- 이미지 아이콘 -->
+  <path d="M45 120 L65 100 L85 120 L115 90 L155 120 V155 H45 V120 Z" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+  <circle cx="70" cy="70" r="6" stroke="#9CA3AF" stroke-width="2" fill="none"/>
+  <!-- 깨진 이미지 표시 (X) -->
+  <path d="M130 55L145 70M145 55L130 70" stroke="#FF6B6B" stroke-width="2"/>
+  <!-- 텍스트 -->
+  <text x="100" y="180" text-anchor="middle" font-family="sans-serif" font-size="14" fill="#6B7280">손상된 이미지입니다</text>
+</svg> 

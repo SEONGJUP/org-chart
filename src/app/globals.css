@@ -1,0 +1,270 @@
+@import "tailwindcss";
+
+@plugin 'tailwind-scrollbar';
+
+:root {
+  --background: #ffffff;
+  --foreground: #191f28;
+  --gray-50: #f9fafb;
+  --gray-100: #f2f4f6;
+  --gray-200: #e5e8eb;
+  --gray-300: #d1d6db;
+  --gray-400: #b0b8c1;
+  --gray-500: #8b95a1;
+  --gray-600: #6b7684;
+  --gray-700: #4e5968;
+  --gray-800: #333d4b;
+  --gray-900: #191f28;
+}
+
+/* Font: Tossface */
+@font-face {
+  font-family: "Tossface";
+  src: url("https://cdn.jsdelivr.net/gh/toss/tossface/dist/TossFaceFontWeb.otf")
+    format("opentype");
+  font-display: swap;
+}
+
+/* Font: Suit */
+@font-face {
+  font-family: "Suit";
+  font-weight: 100 900;
+  src: url("../../public/fonts/SUIT-Variable.woff2") format("woff2-variations");
+}
+
+@theme {
+  --color-white: #ffffff;
+
+  /* mint colors */
+  --color-mint-50: #f8fbfb;
+  --color-mint-100: #e6f3f3;
+  --color-mint-200: #d3e4e3;
+  --color-mint-300: #99e2df;
+  --color-mint-400: #29d1c8;
+  --color-mint-500: #00b7af;
+  --color-mint-600: #21a69f;
+  --color-mint-700: #348d89;
+  --color-mint-800: #00716c;
+  --color-mint-900: #00524e;
+  --color-mint-950: #00423f;
+  --color-mint-sub: #00A099;
+
+  /* sky colors */
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-200: #bae6fd;
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+  --color-sky-800: #075985;
+  --color-sky-900: #0c4a6e;
+  --color-sky-950: #082f49;
+
+  /* font families */
+  --font-tossface: "Tossface", sans-serif;
+  --font-suit: "Suit", sans-serif;
+  --font-pretendard: "Pretendard", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-suit), var(--font-pretendard), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* SafeBuddy dashboard brand palette */
+.safebuddy-console .bg-teal-50 { background-color: #e8fbfa !important; }
+.safebuddy-console .bg-teal-100 { background-color: #d1f6f3 !important; }
+.safebuddy-console .bg-teal-200 { background-color: #a8ece8 !important; }
+.safebuddy-console .bg-teal-500 { background-color: #00b7af !important; }
+.safebuddy-console .bg-teal-600,
+.safebuddy-console .bg-teal-700 { background-color: #00a099 !important; }
+.safebuddy-console [class~="bg-[#0f766e]"] { background-color: #00b7af !important; }
+.safebuddy-console .text-teal-50 { color: #effefd !important; }
+.safebuddy-console .text-teal-100 { color: #d1f6f3 !important; }
+.safebuddy-console .text-teal-600,
+.safebuddy-console .text-teal-700,
+.safebuddy-console .text-teal-800,
+.safebuddy-console .text-teal-900 { color: #00a099 !important; }
+.safebuddy-console .border-teal-100,
+.safebuddy-console .border-teal-200 { border-color: #a8ece8 !important; }
+.safebuddy-console [class~="hover:bg-teal-50"]:hover,
+.safebuddy-console [class~="hover:bg-teal-100"]:hover { background-color: #d1f6f3 !important; }
+.safebuddy-console [class~="hover:border-teal-200"]:hover,
+.safebuddy-console [class~="hover:border-teal-300"]:hover { border-color: #00b7af !important; }
+
+/* Scroll Animation Utilities */
+.scroll-animate {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-animate-delay-1 {
+  transition-delay: 0.1s;
+}
+
+.scroll-animate-delay-2 {
+  transition-delay: 0.2s;
+}
+
+.scroll-animate-delay-3 {
+  transition-delay: 0.3s;
+}
+
+.scroll-animate-delay-4 {
+  transition-delay: 0.4s;
+}
+
+.scroll-animate-delay-5 {
+  transition-delay: 0.5s;
+}
+
+/* Fade Scale Animation */
+.scroll-animate-scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-animate-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Slide from left */
+.scroll-animate-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-animate-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slide from right */
+.scroll-animate-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.scroll-animate-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Counter animation */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade In Up animation for chatbot demo */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Client Logo Infinite Scroll Animations */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll-right 30s linear infinite;
+}
+
+.animate-scroll-left-slow {
+  animation: scroll-left 40s linear infinite;
+}
+
+/* Pause on hover */
+.logo-scroll-left:hover .animate-scroll-left,
+.logo-scroll-left:hover .animate-scroll-left-slow,
+.logo-scroll-right:hover .animate-scroll-right {
+  animation-play-state: paused;
+}
+
+/* Combobox Attention Pulse */
+@keyframes combo-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 183, 175, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 183, 175, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 183, 175, 0);
+  }
+}
+
+@keyframes combo-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.combo-attention {
+  animation: combo-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite,
+    combo-bounce 2s ease-in-out infinite;
+  border-color: var(--color-mint-400) !important;
+}
+
+/* SafeBuddy 운영 화면은 자체 앱 셸을 사용하므로, 마케팅 사이트의 고정 헤더와 푸터를 표시하지 않는다. */
+body:has(.safebuddy-console) [data-main-site-header],
+body:has(.safebuddy-console) [data-main-site-footer] {
+  display: none;
+}
