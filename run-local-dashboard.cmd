@@ -2,4 +2,4 @@
 setlocal
 
 cd /d "%~dp0"
-call npm.cmd run start >> "%~dp0.local-dashboard.log" 2>&1
+call npm.cmd run serve:local >> "%~dp0.local-dashboard.log" 2>&1
