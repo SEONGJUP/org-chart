@@ -3,8 +3,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import localFont from "next/font/local";
 import { cn } from "@/functions/validation";
-import MainHeader from "./_components/MainHeader";
-import MainFooter from "./_components/MainFooter";
+import SiteChrome from "./_components/SiteChrome";
 
 const pretendard = localFont({
   src: "../../public/fonts/PretendardVariable.woff2",
@@ -33,9 +32,7 @@ export default function RootLayout({
   return (
     <html lang="ko" className={cn("light")}>
       <body className={`${pretendard.variable} antialiased max-w-screen overflow-x-hidden`}>
-        <MainHeader />
-        {children}
-        <MainFooter />
+        <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
   );
