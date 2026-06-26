@@ -568,13 +568,24 @@ function DutyCards({ dutyStats }: { dutyStats: Array<LegalDuty & { cards: Array<
                               </div>
                               <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">{item.description}</p>
                             </div>
+                            {typeof item.progress === "number" && (
+                              <div className="hidden w-28 shrink-0 pt-1 md:block">
+                                <div className="flex items-center justify-between text-[10px] font-black">
+                                  <span className="truncate text-slate-400">{item.progressLabel}</span>
+                                  <span className="text-[#008d86]">{item.progress.toFixed(item.progress % 1 === 0 ? 0 : 2)}%</span>
+                                </div>
+                                <div className="mt-1 h-1.5 rounded-full bg-slate-100">
+                                  <div className="h-1.5 rounded-full bg-[#00b7af]" style={{ width: `${Math.min(100, item.progress)}%` }} />
+                                </div>
+                              </div>
+                            )}
                             <button className="shrink-0 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] hover:bg-teal-100">
                               관리
                             </button>
                           </div>
 
                           {typeof item.progress === "number" && (
-                            <div className="mt-3">
+                            <div className="mt-3 md:hidden">
                               <div className="flex items-center justify-between text-[11px] font-black">
                                 <span className="text-slate-400">{item.progressLabel}</span>
                                 <span className="text-[#008d86]">{item.progress.toFixed(item.progress % 1 === 0 ? 0 : 2)}%</span>
@@ -585,12 +596,12 @@ function DutyCards({ dutyStats }: { dutyStats: Array<LegalDuty & { cards: Array<
                             </div>
                           )}
 
-                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          <div className="mt-3 grid grid-cols-3 gap-2">
                             {item.metrics.map((metric) => (
-                              <div key={`${item.id}-${metric.label}`} className={`rounded-lg px-3 py-2 ring-1 ${governanceMetricClass(metric.tone)}`}>
-                                <p className="text-[10px] font-black text-slate-400">{metric.label}</p>
-                                <p className="mt-1 text-sm font-black">{metric.value}</p>
-                                {metric.caption && <p className="mt-0.5 text-[10px] font-bold text-slate-400">{metric.caption}</p>}
+                              <div key={`${item.id}-${metric.label}`} className={`min-w-0 rounded-lg px-3 py-2 ring-1 ${governanceMetricClass(metric.tone)}`}>
+                                <p className="truncate text-[10px] font-black text-slate-400" title={metric.label}>{metric.label}</p>
+                                <p className="mt-1 truncate text-sm font-black" title={metric.value}>{metric.value}</p>
+                                {metric.caption && <p className="mt-0.5 truncate text-[10px] font-bold text-slate-400" title={metric.caption}>{metric.caption}</p>}
                               </div>
                             ))}
                           </div>
