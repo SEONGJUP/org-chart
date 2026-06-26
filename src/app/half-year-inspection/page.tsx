@@ -741,7 +741,7 @@ export default function HalfYearInspectionPage() {
             <div className="mx-auto flex max-w-[1540px] items-center justify-between gap-3">
               <div>
                 <p className="flex items-center gap-2 text-xs font-black text-[#00a099]"><IconShieldCheck size={15} />중처법 이행현황</p>
-                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">반기별 이행점검 데이터 대시보드</h1>
+                <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950">중처법 이행현황 대시보드</h1>
               </div>
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <button className="header-action-card">
