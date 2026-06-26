@@ -26,8 +26,23 @@ type LegalDuty = {
   number: string;
   title: string;
   shortTitle: string;
-  governanceItems: string[];
+  governanceItems: GovernanceItem[];
   safeBuddy?: boolean;
+};
+
+type GovernanceItem = {
+  id: string;
+  title: string;
+  badge: string;
+  description: string;
+  progress?: number;
+  progressLabel?: string;
+  metrics: Array<{
+    label: string;
+    value: string;
+    caption?: string;
+    tone?: "teal" | "slate" | "amber" | "rose";
+  }>;
 };
 
 type SafetyCard = {
@@ -54,13 +69,163 @@ type Period = {
 
 const legalDuties: LegalDuty[] = [
   { id: "risk", number: "①", title: "유해·위험요인 확인 및 개선 여부", shortTitle: "유해·위험요인 확인 및 개선", governanceItems: [] },
-  { id: "manager", number: "②", title: "안전보건관리책임자 등의 충실한 업무수행 평가·관리", shortTitle: "책임자 업무수행 평가·관리", governanceItems: ["안전보건조직구성 여부", "안전보건예산 편성 및 실적", "책임자 평가 (상/하반기)"] },
-  { id: "voice", number: "③", title: "종사자 의견청취 절차에 따른 의견 수렴 및 개선방안 마련·이행 여부", shortTitle: "종사자 의견 수렴 및 개선", governanceItems: ["근로자 의견청취 · 소통 (안전제안 00건, 안전신고 00건)"] },
-  { id: "emergency", number: "④", title: "중대산업재해 발생 대비 매뉴얼에 따른 조치 여부", shortTitle: "중대산업재해 대비 매뉴얼", governanceItems: ["재해 및 아차사고 (재해사고 재발방지조치 00건, 아차사고 00건)"] },
-  { id: "contract", number: "⑤", title: "도급·용역·위탁 기준·절차 이행 여부", shortTitle: "도급·용역·위탁 기준 이행", governanceItems: ["적격수급업체 평가 이행 : 상/하반기"] },
-  { id: "law", number: "⑥", title: "안전·보건 관계 법령에 따른 의무 이행 여부", shortTitle: "관계 법령 의무 이행", governanceItems: ["관계 법령 의무 이행 점검표", "법령 개정사항 반영 여부", "미준수 항목 조치계획"] },
-  { id: "education", number: "⑦", title: "안전·보건 관계 법령에 따른 의무적인 교육 실시 여부", shortTitle: "의무 안전보건 교육", governanceItems: ["법정교육 대상자 관리", "교육 이수율 및 미이수자 조치", "교육 증빙자료 확인"] },
-  { id: "safe-buddy", number: "⑧", title: "안전보건 확보 의무 이행 여부 (중대재해처벌법 시행령 제4조, 제5조 관련)", shortTitle: "안전보건 확보 의무 이행", governanceItems: ["안전보건 확보 의무 종합 이행점검", "반기별 이행점검 보고서 생성", "경영책임자 검토 및 승인"], safeBuddy: true },
+  {
+    id: "manager",
+    number: "②",
+    title: "안전보건관리책임자 등의 충실한 업무수행 평가·관리",
+    shortTitle: "책임자 업무수행 평가·관리",
+    governanceItems: [
+      {
+        id: "safety-org",
+        title: "안전보건조직구성 여부",
+        badge: "완료",
+        description: "안전관리자 선임의무가 있는 규모의 사업장 여부를 판단하여 노출합니다.",
+        progress: 100,
+        progressLabel: "조직 구성 완료",
+        metrics: [
+          { label: "선임의무 판단", value: "대상", caption: "상시근로자·업종 기준", tone: "teal" },
+          { label: "조직 구성", value: "완료", caption: "안전보건 R&R 기준", tone: "teal" },
+        ],
+      },
+      {
+        id: "safety-budget",
+        title: "안전보건예산 편성 및 실적",
+        badge: "집행율 65.50%",
+        description: "연간 안전보건예산 편성액과 현재 집행 실적을 추적합니다.",
+        progress: 65.5,
+        progressLabel: "예산 집행율",
+        metrics: [
+          { label: "2026년 편성", value: "120,000,000원", tone: "slate" },
+          { label: "집행 실적", value: "78,600,000원", tone: "teal" },
+          { label: "집행율", value: "65.50%", tone: "amber" },
+        ],
+      },
+      {
+        id: "manager-evaluation",
+        title: "책임자 평가 (상/하반기)",
+        badge: "R&R 지정 확인",
+        description: "R&R 업무에 담당자가 지정되고 역할 내용이 기재되어 있는지 확인합니다.",
+        progress: 100,
+        progressLabel: "담당자 지정률",
+        metrics: [
+          { label: "안전보건총괄책임자", value: "1명", tone: "teal" },
+          { label: "안전관리자", value: "2명", tone: "teal" },
+          { label: "보건관리자", value: "1명", tone: "teal" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "voice",
+    number: "③",
+    title: "종사자 의견청취 절차에 따른 의견 수렴 및 개선방안 마련·이행 여부",
+    shortTitle: "종사자 의견 수렴 및 개선",
+    governanceItems: [
+      {
+        id: "worker-voice",
+        title: "근로자 의견청취 · 소통",
+        badge: "조치율 90%",
+        description: "안전제안과 안전신고 접수 이후 개선 조치 완료 여부를 관리합니다.",
+        progress: 90,
+        progressLabel: "조치율",
+        metrics: [
+          { label: "안전제안", value: "12건", tone: "slate" },
+          { label: "안전신고", value: "8건", tone: "slate" },
+          { label: "조치 완료", value: "18건", caption: "총 20건 중", tone: "teal" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "emergency",
+    number: "④",
+    title: "중대산업재해 발생 대비 매뉴얼에 따른 조치 여부",
+    shortTitle: "중대산업재해 대비 매뉴얼",
+    governanceItems: [
+      {
+        id: "accident-near-miss",
+        title: "재해 및 아차사고",
+        badge: "조치율 100%",
+        description: "재해와 아차사고 발생 건수, 재발방지조치 완료 여부를 함께 관리합니다.",
+        progress: 100,
+        progressLabel: "재발방지 조치율",
+        metrics: [
+          { label: "재해발생", value: "0건", tone: "teal" },
+          { label: "아차사고 발생", value: "3건", tone: "amber" },
+          { label: "재발방지조치", value: "3건", caption: "대상 3건", tone: "teal" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "contract",
+    number: "⑤",
+    title: "도급·용역·위탁 기준·절차 이행 여부",
+    shortTitle: "도급·용역·위탁 기준 이행",
+    governanceItems: [
+      {
+        id: "contractor-evaluation",
+        title: "적격수급업체 평가 이행 : 상/하반기",
+        badge: "달성도 83%",
+        description: "상/하반기 기준 전체 협력사 대비 평가 완료 현황을 집계합니다.",
+        progress: 83,
+        progressLabel: "평가 달성도",
+        metrics: [
+          { label: "전체 협력사", value: "24개", tone: "slate" },
+          { label: "평가 완료", value: "20개", tone: "teal" },
+          { label: "미완료", value: "4개", tone: "amber" },
+        ],
+      },
+    ],
+  },
+  { id: "law", number: "⑥", title: "안전·보건 관계 법령에 따른 의무 이행 여부", shortTitle: "관계 법령 의무 이행", governanceItems: [] },
+  {
+    id: "education",
+    number: "⑦",
+    title: "안전·보건 관계 법령에 따른 의무적인 교육 실시 여부",
+    shortTitle: "의무 안전보건 교육",
+    governanceItems: [
+      {
+        id: "legal-education-target",
+        title: "법정교육 대상자 관리",
+        badge: "관리중",
+        description: "법정교육 대상자와 이수 현황을 기준으로 관리합니다.",
+        progress: 93,
+        progressLabel: "이수율",
+        metrics: [
+          { label: "교육 대상자", value: "42명", tone: "slate" },
+          { label: "이수 완료", value: "39명", tone: "teal" },
+          { label: "미이수자", value: "3명", tone: "amber" },
+        ],
+      },
+      {
+        id: "legal-education-action",
+        title: "교육 이수율 및 미이수자 조치",
+        badge: "조치율 100%",
+        description: "미이수자에 대한 후속 조치 여부를 관리합니다.",
+        progress: 100,
+        progressLabel: "미이수자 조치율",
+        metrics: [
+          { label: "미이수자", value: "3명", tone: "amber" },
+          { label: "조치 완료", value: "3건", tone: "teal" },
+        ],
+      },
+      {
+        id: "legal-education-evidence",
+        title: "교육 증빙자료 확인",
+        badge: "확인율 95%",
+        description: "교육 이수 증빙자료 제출 및 확인 상태를 관리합니다.",
+        progress: 95,
+        progressLabel: "증빙 확인율",
+        metrics: [
+          { label: "제출 자료", value: "39건", tone: "slate" },
+          { label: "확인 완료", value: "37건", tone: "teal" },
+          { label: "보완 필요", value: "2건", tone: "amber" },
+        ],
+      },
+    ],
+  },
+  { id: "safe-buddy", number: "⑧", title: "안전보건 확보 의무 이행 여부 (중대재해처벌법 시행령 제4조, 제5조 관련)", shortTitle: "안전보건 확보 의무 이행", governanceItems: [], safeBuddy: true },
 ];
 
 const safetyCards: SafetyCard[] = [
@@ -197,6 +362,13 @@ function progressClass(status: DutyStatus) {
   if (status === "진행중") return "bg-amber-400";
   if (status === "미완료") return "bg-rose-400";
   return "bg-slate-300";
+}
+
+function governanceMetricClass(tone: GovernanceItem["metrics"][number]["tone"] = "slate") {
+  if (tone === "teal") return "bg-teal-50 text-[#008d86] ring-teal-100";
+  if (tone === "amber") return "bg-amber-50 text-amber-700 ring-amber-100";
+  if (tone === "rose") return "bg-rose-50 text-rose-700 ring-rose-100";
+  return "bg-slate-50 text-slate-700 ring-slate-100";
 }
 
 function Sidebar() {
@@ -385,11 +557,43 @@ function DutyCards({ dutyStats }: { dutyStats: Array<LegalDuty & { cards: Array<
                     <b className="text-sm font-black text-slate-800">{duty.governanceItems.length}건</b>
                   </div>
                   {duty.governanceItems.length > 0 ? (
-                    <div className="mt-3 grid gap-1.5">
+                    <div className="mt-3 grid gap-3">
                       {duty.governanceItems.map((item) => (
-                        <div key={item} className="flex items-start gap-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-600 ring-1 ring-slate-100">
-                          <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-[#00a099]" />
-                          <span className="leading-4">{item}</span>
+                        <div key={item.id} className="rounded-xl bg-white p-3 ring-1 ring-slate-100">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-xs font-black text-slate-800">{item.title}</p>
+                                <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-black text-[#008d86] ring-1 ring-teal-100">{item.badge}</span>
+                              </div>
+                              <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">{item.description}</p>
+                            </div>
+                            <button className="shrink-0 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] hover:bg-teal-100">
+                              관리
+                            </button>
+                          </div>
+
+                          {typeof item.progress === "number" && (
+                            <div className="mt-3">
+                              <div className="flex items-center justify-between text-[11px] font-black">
+                                <span className="text-slate-400">{item.progressLabel}</span>
+                                <span className="text-[#008d86]">{item.progress.toFixed(item.progress % 1 === 0 ? 0 : 2)}%</span>
+                              </div>
+                              <div className="mt-1.5 h-2 rounded-full bg-slate-100">
+                                <div className="h-2 rounded-full bg-[#00b7af]" style={{ width: `${Math.min(100, item.progress)}%` }} />
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                            {item.metrics.map((metric) => (
+                              <div key={`${item.id}-${metric.label}`} className={`rounded-lg px-3 py-2 ring-1 ${governanceMetricClass(metric.tone)}`}>
+                                <p className="text-[10px] font-black text-slate-400">{metric.label}</p>
+                                <p className="mt-1 text-sm font-black">{metric.value}</p>
+                                {metric.caption && <p className="mt-0.5 text-[10px] font-bold text-slate-400">{metric.caption}</p>}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -454,7 +658,7 @@ function SafetyCardTable({ rows }: { rows: Array<SafetyCard & { duty: LegalDuty;
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left">
           <thead>
             <tr className="text-xs text-slate-500">
-              {["책임자 안전보건 확보 의무 현황", "문서명(안전카드)", "목표주기", "실적", "달성률", "상태", "작성"].map((head) => (
+              {["책임자 안전보건 확보 의무 현황", "문서명(안전카드)", "목표주기", "실적", "목표", "달성률", "상태", "작성"].map((head) => (
                 <th key={head} className="border-b border-slate-200 bg-slate-50 px-4 py-3 font-black first:rounded-l-xl last:rounded-r-xl">{head}</th>
               ))}
             </tr>
@@ -469,6 +673,7 @@ function SafetyCardTable({ rows }: { rows: Array<SafetyCard & { duty: LegalDuty;
                 <td className="border-b border-slate-100 px-4 py-3 align-top text-sm font-black text-slate-800">{row.name}</td>
                 <td className="border-b border-slate-100 px-4 py-3 align-top"><span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-600">{getCyclePolicy(row).label}</span></td>
                 <td className="border-b border-slate-100 px-4 py-3 align-top text-sm font-black text-slate-800">{row.actual.toLocaleString()}건</td>
+                <td className="border-b border-slate-100 px-4 py-3 align-top text-sm font-black text-slate-800">{row.target > 0 ? `${row.target.toLocaleString()}건` : "목표없음"}</td>
                 <td className="border-b border-slate-100 px-4 py-3 align-top">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-20 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-[#00b7af]" style={{ width: `${row.rate}%` }} /></div>
