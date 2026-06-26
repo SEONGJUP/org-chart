@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import MainFooter from "./MainFooter";
 import MainHeader from "./MainHeader";
 
-const chromeHiddenPaths = new Set(["/org-chart"]);
+const chromeHiddenPaths = new Set(["/org-chart", "/half-year-inspection", "/site-performance"]);
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
