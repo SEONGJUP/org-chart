@@ -661,9 +661,6 @@ function SafetyCardTable({ rows }: { rows: Array<SafetyCard & { duty: LegalDuty;
           <h2 className="mt-1 text-xl font-black text-slate-900">안전카드별 세부추진 목표 / 현황</h2>
           <p className="mt-1 text-sm text-slate-500">세이프버디 안전카드 목록을 법정 이행 항목에 연결해 목표와 실적을 확인합니다.</p>
         </div>
-        <button className="inline-flex items-center gap-2 rounded-xl bg-[#00a099] px-4 py-2.5 text-sm font-black text-white">
-          <IconFilePlus size={17} />안전카드 신규생성
-        </button>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-[1180px] w-full border-separate border-spacing-0 text-left">
