@@ -8,7 +8,6 @@ import {
   IconChevronDown,
   IconChevronRight,
   IconClipboardCheck,
-  IconFilePlus,
   IconFolder,
   IconLayoutDashboard,
   IconMenu2,
@@ -36,6 +35,7 @@ type GovernanceItem = {
   id: string;
   title: string;
   badge: string;
+  status: "완료" | "진행중";
   description: string;
   progress?: number;
   progressLabel?: string;
@@ -77,6 +77,14 @@ type GovernanceManagementConfig = {
   histories: EvaluationHistory[];
 };
 
+type EvaluationCandidate = {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  evaluator: string;
+};
+
 type SafetyCard = {
   id: string;
   category: string;
@@ -111,39 +119,36 @@ const legalDuties: LegalDuty[] = [
         id: "safety-org",
         title: "안전보건조직구성 여부",
         badge: "완료",
+        status: "완료",
         description: "안전관리자 선임의무가 있는 규모의 사업장 여부를 판단하여 노출합니다.",
-        progress: 100,
-        progressLabel: "조직 구성 완료",
         metrics: [
-          { label: "선임의무 판단", value: "대상", caption: "상시근로자·업종 기준", tone: "teal" },
           { label: "조직 구성", value: "완료", caption: "안전보건 R&R 기준", tone: "teal" },
-        ],
-      },
-      {
-        id: "safety-budget",
-        title: "안전보건예산 편성 및 실적",
-        badge: "집행율 65.50%",
-        description: "연간 안전보건예산 편성액과 현재 집행 실적을 추적합니다.",
-        progress: 65.5,
-        progressLabel: "예산 집행율",
-        metrics: [
-          { label: "2026년 편성", value: "120,000,000원", tone: "slate" },
-          { label: "집행 실적", value: "78,600,000원", tone: "teal" },
-          { label: "집행율", value: "65.50%", tone: "amber" },
+          { label: "안전관리자 선임의무", value: "2명", caption: "대상 사업장", tone: "teal" },
+          { label: "보건관리자 선임의무", value: "1명", caption: "대상 사업장", tone: "teal" },
         ],
       },
       {
         id: "manager-evaluation",
         title: "책임자 평가 (상/하반기)",
         badge: "R&R 지정 확인",
+        status: "진행중",
         description: "R&R 업무에 담당자가 지정되고 역할 내용이 기재되어 있는지 확인합니다.",
-        progress: 100,
-        progressLabel: "담당자 지정률",
         managementType: "MANAGER_EVALUATION",
         metrics: [
-          { label: "안전보건총괄책임자", value: "1명", tone: "teal" },
-          { label: "안전관리자", value: "2명", tone: "teal" },
-          { label: "보건관리자", value: "1명", tone: "teal" },
+          { label: "평가 대상", value: "4명", caption: "총괄책임자·안전·보건관리자", tone: "slate" },
+          { label: "평가 완료", value: "3명", caption: "상반기 평가 수행", tone: "teal" },
+          { label: "평가 미완료", value: "1명", caption: "보완 필요", tone: "amber" },
+        ],
+      },
+      {
+        id: "safety-budget",
+        title: "안전보건예산 편성 및 실적",
+        badge: "관리중",
+        status: "진행중",
+        description: "연간 안전보건예산 편성액과 현재 집행 실적을 추적합니다.",
+        metrics: [
+          { label: "2026년 편성", value: "120,000,000원", tone: "slate" },
+          { label: "집행 실적", value: "78,600,000원 · 65.5%", tone: "teal" },
         ],
       },
     ],
@@ -157,14 +162,13 @@ const legalDuties: LegalDuty[] = [
       {
         id: "worker-voice",
         title: "근로자 의견청취 · 소통",
-        badge: "조치율 90%",
+        badge: "관리중",
+        status: "진행중",
         description: "안전제안과 안전신고 접수 이후 개선 조치 완료 여부를 관리합니다.",
-        progress: 90,
-        progressLabel: "조치율",
         metrics: [
           { label: "안전제안", value: "12건", tone: "slate" },
           { label: "안전신고", value: "8건", tone: "slate" },
-          { label: "조치 완료", value: "18건", caption: "총 20건 중", tone: "teal" },
+          { label: "조치 완료", value: "18건 · 90%", caption: "총 20건 중", tone: "teal" },
         ],
       },
     ],
@@ -178,14 +182,13 @@ const legalDuties: LegalDuty[] = [
       {
         id: "accident-near-miss",
         title: "재해 및 아차사고",
-        badge: "조치율 100%",
+        badge: "관리중",
+        status: "완료",
         description: "재해와 아차사고 발생 건수, 재발방지조치 완료 여부를 함께 관리합니다.",
-        progress: 100,
-        progressLabel: "재발방지 조치율",
         metrics: [
           { label: "재해발생", value: "0건", tone: "teal" },
           { label: "아차사고 발생", value: "3건", tone: "amber" },
-          { label: "재발방지조치", value: "3건", caption: "대상 3건", tone: "teal" },
+          { label: "재발방지조치", value: "3건 · 100%", caption: "대상 3건", tone: "teal" },
         ],
       },
     ],
@@ -199,14 +202,13 @@ const legalDuties: LegalDuty[] = [
       {
         id: "contractor-evaluation",
         title: "적격수급업체 평가 이행 : 상/하반기",
-        badge: "달성도 83%",
+        badge: "관리중",
+        status: "진행중",
         description: "상/하반기 기준 전체 협력사 대비 평가 완료 현황을 집계합니다.",
-        progress: 83,
-        progressLabel: "평가 달성도",
         managementType: "CONTRACTOR_EVALUATION",
         metrics: [
           { label: "전체 협력사", value: "24개", tone: "slate" },
-          { label: "평가 완료", value: "20개", tone: "teal" },
+          { label: "평가 완료", value: "20개 · 83%", tone: "teal" },
           { label: "미완료", value: "4개", tone: "amber" },
         ],
       },
@@ -220,28 +222,15 @@ const legalDuties: LegalDuty[] = [
     shortTitle: "의무 안전보건 교육",
     governanceItems: [
       {
-        id: "legal-education-target",
-        title: "법정교육 대상자 관리",
-        badge: "관리중",
-        description: "법정교육 대상자와 이수 현황을 기준으로 관리합니다.",
-        progress: 93,
-        progressLabel: "이수율",
+        id: "legal-education-summary",
+        title: "안전보건교육 이행 현황",
+        badge: "통계 집계",
+        status: "완료",
+        description: "안전보건교육 수행 건수와 수료자, TBM 교육시간을 집계합니다.",
         metrics: [
-          { label: "교육 대상자", value: "42명", tone: "slate" },
-          { label: "이수 완료", value: "39명", tone: "teal" },
-          { label: "미이수자", value: "3명", tone: "amber" },
-        ],
-      },
-      {
-        id: "legal-education-action",
-        title: "교육 이수율 및 미이수자 조치",
-        badge: "조치율 100%",
-        description: "미이수자에 대한 후속 조치 여부를 관리합니다.",
-        progress: 100,
-        progressLabel: "미이수자 조치율",
-        metrics: [
-          { label: "미이수자", value: "3명", tone: "amber" },
-          { label: "조치 완료", value: "3건", tone: "teal" },
+          { label: "수행교육의 수", value: "48건", tone: "slate" },
+          { label: "교육수료자", value: "312명", tone: "teal" },
+          { label: "TBM 교육시간", value: "1,860분", tone: "amber" },
         ],
       },
     ],
@@ -475,6 +464,24 @@ const governanceManagementConfigs: Record<GovernanceManagementType, GovernanceMa
   },
 };
 
+const evaluationCandidates: Record<GovernanceManagementType, EvaluationCandidate[]> = {
+  MANAGER_EVALUATION: [
+    { id: "candidate-manager-001", name: "김도현", role: "안전보건총괄책임자", department: "본사 안전보건실", evaluator: "현장소장" },
+    { id: "candidate-manager-002", name: "이서연", role: "안전관리자", department: "본사 안전보건실", evaluator: "현장소장" },
+    { id: "candidate-manager-003", name: "박준호", role: "보건관리자", department: "현장 안전보건팀", evaluator: "현장소장" },
+    { id: "candidate-manager-004", name: "최민재", role: "관리감독자", department: "토목공사팀", evaluator: "현장소장" },
+    { id: "candidate-manager-005", name: "정하늘", role: "관리감독자", department: "건축공사팀", evaluator: "현장소장" },
+    { id: "candidate-manager-006", name: "오세진", role: "안전관리자", department: "2공구 안전관리팀", evaluator: "현장소장" },
+  ],
+  CONTRACTOR_EVALUATION: [
+    { id: "candidate-contractor-001", name: "한빛산업", role: "협력사", department: "철근콘크리트", evaluator: "현장소장" },
+    { id: "candidate-contractor-002", name: "대명이엔지", role: "협력사", department: "전기공사", evaluator: "현장소장" },
+    { id: "candidate-contractor-003", name: "세진건설기계", role: "협력사", department: "장비·양중", evaluator: "현장소장" },
+    { id: "candidate-contractor-004", name: "우진산업안전", role: "협력사", department: "안전시설물", evaluator: "현장소장" },
+    { id: "candidate-contractor-005", name: "동해설비", role: "협력사", department: "기계설비", evaluator: "현장소장" },
+  ],
+};
+
 const safetyCards: SafetyCard[] = [
   { id: "policy", category: "안전 경영", name: "안전보건 경영방침", dutyId: "manager", cycleType: "YEARLY", cycleLabel: "연 1회", scheduledMonths: [1], baseActual: 1, evidence: 2 },
   { id: "goal", category: "안전 경영", name: "안전보건 목표", dutyId: "safe-buddy", cycleType: "YEARLY", cycleLabel: "연 1회", scheduledMonths: [1], baseActual: 1, evidence: 2 },
@@ -618,6 +625,12 @@ function governanceMetricClass(tone: GovernanceItem["metrics"][number]["tone"] =
   return "bg-slate-50 text-slate-700 ring-slate-100";
 }
 
+function governanceStatusClass(status: GovernanceItem["status"]) {
+  return status === "완료"
+    ? "bg-emerald-50 text-emerald-700 ring-emerald-100"
+    : "bg-amber-50 text-amber-700 ring-amber-100";
+}
+
 function evaluationStatusClass(status: EvaluationHistory["status"] | EvaluationTarget["status"]) {
   if (status === "평가완료") return "bg-emerald-50 text-emerald-700 ring-emerald-100";
   if (status === "진행중") return "bg-amber-50 text-amber-700 ring-amber-100";
@@ -750,7 +763,7 @@ function Overview({
             <IconShieldCheck size={30} strokeWidth={2.2} />
           </div>
 
-          <p className="text-base font-black text-white/90">안전관리체계 종합 이행률</p>
+          <p className="text-base font-black text-white/90">안전관리체계 구축 종합 이행률</p>
           <div className="mt-3 flex flex-wrap items-end gap-4">
             <p className="text-[54px] leading-none font-black tracking-[-0.02em]">{totalRate}%</p>
             <p className="mb-2 text-lg font-black text-white/90">정상 관리 구간</p>
@@ -784,9 +797,16 @@ function Overview({
 
 function GovernanceManagementModal({ item, viewerRole, onClose }: { item: GovernanceItem & { managementType: GovernanceManagementType }; viewerRole: ViewerRole; onClose: () => void }) {
   const config = governanceManagementConfigs[item.managementType];
+  const [histories, setHistories] = useState<EvaluationHistory[]>(config.histories);
   const [selectedHistoryId, setSelectedHistoryId] = useState(config.histories[0]?.id ?? "");
   const [selectedTargetId, setSelectedTargetId] = useState("");
-  const selectedHistory = config.histories.find((history) => history.id === selectedHistoryId) ?? config.histories[0];
+  const [isNewFormOpen, setIsNewFormOpen] = useState(false);
+  const [newYear, setNewYear] = useState(2026);
+  const [newHalf, setNewHalf] = useState<EvaluationHistory["half"]>("상반기");
+  const [newFormError, setNewFormError] = useState("");
+  const [isAddTargetOpen, setIsAddTargetOpen] = useState(false);
+  const [targetAddError, setTargetAddError] = useState("");
+  const selectedHistory = histories.find((history) => history.id === selectedHistoryId) ?? histories[0];
   const selectedTarget = selectedTargetId ? selectedHistory.targets.find((target) => target.id === selectedTargetId) : undefined;
   const [editableChecklist, setEditableChecklist] = useState<Array<{ label: string; checked: boolean }>>([]);
   const [evaluationStatus, setEvaluationStatus] = useState<EvaluationTarget["status"]>("미평가");
@@ -804,6 +824,73 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
   const selectHistory = (history: EvaluationHistory) => {
     setSelectedHistoryId(history.id);
     setSelectedTargetId("");
+    setIsAddTargetOpen(false);
+    setTargetAddError("");
+  };
+
+  const createHistory = () => {
+    const exists = histories.some((history) => history.year === newYear && history.half === newHalf);
+    if (exists) {
+      setNewFormError(`${newYear}년 ${newHalf} 평가는 이미 생성되어 있습니다.`);
+      return;
+    }
+
+    const sourceTargets = selectedHistory?.targets ?? [];
+    const nextHistory: EvaluationHistory = {
+      id: `${item.managementType.toLowerCase()}-${newYear}-${newHalf === "상반기" ? "h1" : "h2"}-${Date.now()}`,
+      year: newYear,
+      half: newHalf,
+      period: newHalf === "상반기" ? `${newYear}.01.01 ~ ${newYear}.06.30` : `${newYear}.07.01 ~ ${newYear}.12.31`,
+      status: "미평가",
+      completed: 0,
+      total: sourceTargets.length,
+      targets: sourceTargets.map((target, index) => ({
+        ...target,
+        id: `${target.id}-${newYear}-${newHalf === "상반기" ? "h1" : "h2"}-${index}`,
+        status: "미평가",
+        evidence: 0,
+        checklist: target.checklist.map((check) => ({ ...check, checked: false })),
+      })),
+    };
+
+    setHistories((items) => [nextHistory, ...items]);
+    setSelectedHistoryId(nextHistory.id);
+    setSelectedTargetId("");
+    setIsNewFormOpen(false);
+    setNewFormError("");
+  };
+
+  const addEvaluationTarget = (candidate: EvaluationCandidate) => {
+    if (!selectedHistory) return;
+    const exists = selectedHistory.targets.some((target) => target.name === candidate.name && target.role === candidate.role);
+    if (exists) {
+      setTargetAddError(`${candidate.name} 대상자는 이미 등록되어 있습니다.`);
+      return;
+    }
+
+    const templateChecklist = selectedHistory.targets[0]?.checklist ?? [
+      { label: "R&R 및 평가 대상 여부 확인", checked: false },
+      { label: "업무수행 기록 확인", checked: false },
+      { label: "보완 필요사항 조치 여부 확인", checked: false },
+    ];
+    const nextTarget: EvaluationTarget = {
+      id: `${candidate.id}-${selectedHistory.id}-${Date.now()}`,
+      name: candidate.name,
+      role: candidate.role,
+      department: candidate.department,
+      evaluator: candidate.evaluator,
+      evidence: 0,
+      status: "미평가",
+      checklist: templateChecklist.map((check) => ({ ...check, checked: false })),
+    };
+
+    setHistories((items) => items.map((history) => history.id === selectedHistory.id
+      ? { ...history, total: history.total + 1, targets: [...history.targets, nextTarget] }
+      : history
+    ));
+    setSelectedTargetId(nextTarget.id);
+    setIsAddTargetOpen(false);
+    setTargetAddError("");
   };
 
   const updateChecklistLabel = (index: number, label: string) => {
@@ -846,12 +933,47 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <p className="text-xs font-black text-slate-400">년도별 상·하반기 이력</p>
-                <p className="text-sm font-black text-slate-800">{config.histories.length}개 평가 이력</p>
+                <p className="text-sm font-black text-slate-800">{histories.length}개 평가 이력</p>
               </div>
-              {canEvaluate && <button className="rounded-lg bg-[#00b7af] px-3 py-2 text-xs font-black text-white shadow-sm">신규 평가</button>}
+              {canEvaluate && (
+                <button
+                  onClick={() => {
+                    setIsNewFormOpen((open) => !open);
+                    setNewFormError("");
+                  }}
+                  className="rounded-lg bg-[#00b7af] px-3 py-2 text-xs font-black text-white shadow-sm"
+                >
+                  신규 평가
+                </button>
+              )}
             </div>
+            {canEvaluate && isNewFormOpen && (
+              <div className="mb-4 rounded-2xl border border-teal-100 bg-white p-3 shadow-sm">
+                <p className="text-xs font-black text-[#00a099]">신규 평가 생성</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <label className="text-[10px] font-black text-slate-400">
+                    년도
+                    <select value={newYear} onChange={(event) => setNewYear(Number(event.target.value))} className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-black text-slate-700 outline-none focus:border-[#00b7af]">
+                      {[2024, 2025, 2026, 2027, 2028].map((yearOption) => <option key={yearOption} value={yearOption}>{yearOption}년</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[10px] font-black text-slate-400">
+                    평가 구분
+                    <select value={newHalf} onChange={(event) => setNewHalf(event.target.value as EvaluationHistory["half"])} className="mt-1 h-9 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-black text-slate-700 outline-none focus:border-[#00b7af]">
+                      <option value="상반기">상반기</option>
+                      <option value="하반기">하반기</option>
+                    </select>
+                  </label>
+                </div>
+                {newFormError && <p className="mt-2 rounded-lg bg-rose-50 px-2 py-1.5 text-[11px] font-bold text-rose-600">{newFormError}</p>}
+                <div className="mt-3 flex justify-end gap-2">
+                  <button onClick={() => setIsNewFormOpen(false)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-black text-slate-500 transition hover:bg-slate-50">취소</button>
+                  <button onClick={createHistory} className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-[#00a099]">생성</button>
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
-              {config.histories.map((history) => {
+              {histories.map((history) => {
                 const rate = history.total > 0 ? Math.round((history.completed / history.total) * 100) : 0;
                 const active = history.id === selectedHistory.id;
                 return (
@@ -925,7 +1047,17 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
               {!selectedTarget && <section className="min-h-0 rounded-2xl border border-slate-200 bg-white p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <h4 className="text-sm font-black text-slate-900">대상자 목록</h4>
-                  <span className="text-xs font-bold text-slate-400">{selectedHistory.year}년 {selectedHistory.half}</span>
+                  {canEvaluate && (
+                    <button
+                      onClick={() => {
+                        setIsAddTargetOpen((open) => !open);
+                        setTargetAddError("");
+                      }}
+                      className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] transition hover:bg-teal-100"
+                    >
+                      + 대상자 추가
+                    </button>
+                  )}
                 </div>
                 <div className="max-h-[58vh] space-y-2 overflow-y-auto pr-1">
                   {selectedHistory.targets.map((target) => (
@@ -942,11 +1074,45 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
               </section>}
 
               {!selectedTarget && (
-                <section className="grid min-h-[360px] place-items-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-                  <div>
-                    <p className="text-lg font-black text-slate-800">대상자를 선택하세요</p>
-                    <p className="mt-2 text-sm font-bold text-slate-400">좌측 대상자 목록에서 사람 또는 협력업체를 선택하면 개인별 평가수행 화면이 펼쳐집니다.</p>
-                  </div>
+                <section className={`min-h-[360px] rounded-2xl border ${isAddTargetOpen ? "border-slate-200 bg-white p-4" : "grid place-items-center border-dashed border-slate-200 bg-slate-50 p-8 text-center"}`}>
+                  {isAddTargetOpen ? (
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-black tracking-[0.12em] text-[#00a099]">ADD TARGET</p>
+                          <h4 className="mt-1 text-lg font-black text-slate-900">{item.managementType === "MANAGER_EVALUATION" ? "직원/R&R 등록자 불러오기" : "협력사 불러오기"}</h4>
+                          <p className="mt-1 text-sm font-bold text-slate-400">현재 평가 이력에 추가할 대상자를 선택하세요. 이미 등록된 대상자는 중복 추가되지 않습니다.</p>
+                        </div>
+                        <button onClick={() => setIsAddTargetOpen(false)} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition hover:bg-slate-100">닫기</button>
+                      </div>
+                      {targetAddError && <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600">{targetAddError}</p>}
+                      <div className="mt-4 grid max-h-[52vh] gap-2 overflow-y-auto pr-1 md:grid-cols-2">
+                        {evaluationCandidates[item.managementType].map((candidate) => {
+                          const alreadyAdded = selectedHistory.targets.some((target) => target.name === candidate.name && target.role === candidate.role);
+                          return (
+                            <button
+                              key={candidate.id}
+                              onClick={() => addEvaluationTarget(candidate)}
+                              disabled={alreadyAdded}
+                              className={`rounded-xl border p-3 text-left transition ${alreadyAdded ? "cursor-not-allowed border-slate-100 bg-slate-50 opacity-60" : "border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40"}`}
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <b className="truncate text-sm font-black text-slate-900">{candidate.name}</b>
+                                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ${alreadyAdded ? "bg-slate-100 text-slate-400" : "bg-teal-50 text-[#008d86]"}`}>{alreadyAdded ? "등록됨" : "추가"}</span>
+                              </div>
+                              <p className="mt-1 text-xs font-bold text-slate-500">{candidate.role}</p>
+                              <p className="mt-0.5 text-xs font-bold text-slate-400">{candidate.department}</p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-lg font-black text-slate-800">대상자를 선택하세요</p>
+                      <p className="mt-2 text-sm font-bold text-slate-400">좌측 대상자 목록에서 사람 또는 협력업체를 선택하면 개인별 평가수행 화면이 펼쳐집니다.</p>
+                    </div>
+                  )}
                 </section>
               )}
 
@@ -1096,7 +1262,7 @@ function DutyCards({ dutyStats, viewerRole }: { dutyStats: Array<LegalDuty & { c
                 <p className="mt-2 pl-10 text-sm text-slate-500">{duty.title}</p>
                 <div className="mt-4 rounded-xl border border-slate-200 bg-slate-100 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-bold text-slate-400">안전 경영체계(Governance) 이행</p>
+                    <p className="text-[11px] font-bold text-slate-400">안전 경영체계(Governance) 이행사항 별도관리 항목</p>
                     <b className="text-sm font-black text-slate-800">{duty.governanceItems.length}건</b>
                   </div>
                   {duty.governanceItems.length > 0 ? (
@@ -1111,48 +1277,28 @@ function DutyCards({ dutyStats, viewerRole }: { dutyStats: Array<LegalDuty & { c
                               </div>
                               <p className="mt-1 text-[11px] font-semibold leading-4 text-slate-500">{item.description}</p>
                             </div>
-                            {typeof item.progress === "number" && (
-                              <div className="hidden w-28 shrink-0 pt-1 md:block">
-                                <div className="flex items-center justify-between text-[10px] font-black">
-                                  <span className="truncate text-slate-400">{item.progressLabel}</span>
-                                  <span className="text-[#008d86]">{item.progress.toFixed(item.progress % 1 === 0 ? 0 : 2)}%</span>
-                                </div>
-                                <div className="mt-1 h-1.5 rounded-full bg-slate-100">
-                                  <div className="h-1.5 rounded-full bg-[#00b7af]" style={{ width: `${Math.min(100, item.progress)}%` }} />
-                                </div>
-                              </div>
-                            )}
-                            <button
-                              onClick={() => {
-                                if (item.id === "safety-org") {
-                                  window.location.href = "/org-chart";
-                                  return;
-                                }
-                                if (item.id === "safety-budget") {
-                                  window.location.href = "https://safety-budget.vercel.app/";
-                                  return;
-                                }
-                                if (item.managementType) {
-                                  setSelectedManagementItem(item as GovernanceItem & { managementType: GovernanceManagementType });
-                                }
-                              }}
-                              className="shrink-0 rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] transition hover:bg-teal-100"
-                            >
-                              관리
-                            </button>
-                          </div>
-
-                          {typeof item.progress === "number" && (
-                            <div className="mt-3 md:hidden">
-                              <div className="flex items-center justify-between text-[11px] font-black">
-                                <span className="text-slate-400">{item.progressLabel}</span>
-                                <span className="text-[#008d86]">{item.progress.toFixed(item.progress % 1 === 0 ? 0 : 2)}%</span>
-                              </div>
-                              <div className="mt-1.5 h-2 rounded-full bg-slate-100">
-                                <div className="h-2 rounded-full bg-[#00b7af]" style={{ width: `${Math.min(100, item.progress)}%` }} />
-                              </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                              <span className={`rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${governanceStatusClass(item.status)}`}>{item.status}</span>
+                              <button
+                                onClick={() => {
+                                  if (item.id === "safety-org") {
+                                    window.location.href = "/org-chart";
+                                    return;
+                                  }
+                                  if (item.id === "safety-budget") {
+                                    window.location.href = "https://safety-budget.vercel.app/";
+                                    return;
+                                  }
+                                  if (item.managementType) {
+                                    setSelectedManagementItem(item as GovernanceItem & { managementType: GovernanceManagementType });
+                                  }
+                                }}
+                                className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] transition hover:bg-teal-100"
+                              >
+                                관리
+                              </button>
                             </div>
-                          )}
+                          </div>
 
                           <div className="mt-3 grid grid-cols-3 gap-2">
                             {item.metrics.map((metric) => (
@@ -1167,7 +1313,7 @@ function DutyCards({ dutyStats, viewerRole }: { dutyStats: Array<LegalDuty & { c
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-400 ring-1 ring-slate-100">추가 관리 필드 없음</p>
+                    <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-slate-400 ring-1 ring-slate-100">추가 관리 항목 없음</p>
                   )}
                 </div>
               </div>
@@ -1320,10 +1466,6 @@ export default function HalfYearInspectionPage() {
                 <button className="header-action-card">
                   <span className="header-action-icon"><IconClipboardCheck size={17} /></span>
                   <span>안전보건목표 및 세부추진계획</span>
-                </button>
-                <button className="header-action-card">
-                  <span className="header-action-icon"><IconFilePlus size={17} /></span>
-                  <span>안전보건목표 및 세부추진실적</span>
                 </button>
                 <button className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white">
                   <IconReportAnalytics size={17} />중처법 이행점검 보고서 만들기
