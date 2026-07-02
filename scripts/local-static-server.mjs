@@ -1,10 +1,12 @@
 import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize } from "node:path";
+import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const root = normalize(join(fileURLToPath(import.meta.url), "..", ".."));
+const root = normalize(join(dirname(fileURLToPath(import.meta.url)), ".."));
 const port = Number(process.env.PORT || 3001);
+const host = process.env.HOST || "0.0.0.0";
+const appDir = join(root, ".next", "server", "app");
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -25,15 +27,32 @@ function safeJoin(base, requestPath) {
   return resolved.startsWith(normalize(base)) ? resolved : null;
 }
 
-function resolveFile(urlPath) {
-  const cleanPath = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/+/, "");
+function isFile(filePath) {
+  try {
+    return existsSync(filePath) && statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function resolveFile(urlPath = "/") {
+  let cleanPath = "/";
+  try {
+    cleanPath = decodeURIComponent(urlPath.split("?")[0]).replace(/^\/+/, "");
+  } catch {
+    cleanPath = "";
+  }
 
   if (cleanPath === "" || cleanPath === "index") {
-    return join(root, ".next", "server", "app", "index.html");
+    return join(appDir, "index.html");
+  }
+
+  if (cleanPath === "__health") {
+    return "__health";
   }
 
   if (cleanPath === "favicon.ico") {
-    return join(root, ".next", "server", "app", "favicon.ico.body");
+    return join(appDir, "favicon.ico.body");
   }
 
   if (cleanPath.startsWith("_next/static/")) {
@@ -41,21 +60,34 @@ function resolveFile(urlPath) {
   }
 
   const publicFile = safeJoin(join(root, "public"), cleanPath);
-  if (publicFile && existsSync(publicFile) && statSync(publicFile).isFile()) {
+  if (publicFile && isFile(publicFile)) {
     return publicFile;
   }
 
   const routeName = cleanPath.replace(/\/$/, "").replace(/\//g, "-");
-  return join(root, ".next", "server", "app", `${routeName}.html`);
+  return join(appDir, `${routeName}.html`);
 }
 
 const server = createServer((req, res) => {
   const filePath = resolveFile(req.url || "/");
 
-  if (!filePath || !existsSync(filePath) || !statSync(filePath).isFile()) {
-    const notFound = join(root, ".next", "server", "app", "_not-found.html");
+  if (filePath === "__health") {
+    res.writeHead(200, {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    });
+    res.end(JSON.stringify({ ok: true, root, appDir }));
+    return;
+  }
+
+  if (!filePath || !isFile(filePath)) {
+    const notFound = join(appDir, "_not-found.html");
     res.writeHead(404, { "content-type": contentTypes[".html"] });
-    createReadStream(notFound).pipe(res);
+    if (isFile(notFound)) {
+      createReadStream(notFound).pipe(res);
+    } else {
+      res.end("Not found. Run `npm run build` before `npm run preview:static`.");
+    }
     return;
   }
 
@@ -64,9 +96,21 @@ const server = createServer((req, res) => {
     "content-type": contentTypes[ext] || "application/octet-stream",
     "cache-control": "no-store",
   });
-  createReadStream(filePath).pipe(res);
+  createReadStream(filePath)
+    .on("error", () => {
+      if (!res.headersSent) {
+        res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
+      }
+      res.end("Failed to read file.");
+    })
+    .pipe(res);
 });
 
-server.listen(port, "::", () => {
+server.on("error", (error) => {
+  console.error(error);
+  process.exit(1);
+});
+
+server.listen(port, host, () => {
   console.log(`SafeBuddy static preview: http://localhost:${port}/half-year-inspection`);
 });
