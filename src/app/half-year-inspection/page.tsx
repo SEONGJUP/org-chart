@@ -146,17 +146,6 @@ const legalDuties: LegalDuty[] = [
           { label: "평가 미완료", value: "1명", caption: "보완 필요", tone: "amber" },
         ],
       },
-      {
-        id: "safety-budget",
-        title: "안전보건예산 편성 및 실적",
-        badge: "관리중",
-        status: "진행중",
-        description: "연간 안전보건예산 편성액과 현재 집행 실적을 추적합니다.",
-        metrics: [
-          { label: "2026년 편성", value: "120,000,000원", tone: "slate" },
-          { label: "집행 실적", value: "78,600,000원 · 65.5%", tone: "teal" },
-        ],
-      },
     ],
   },
   {
@@ -220,7 +209,26 @@ const legalDuties: LegalDuty[] = [
       },
     ],
   },
-  { id: "law", number: "⑥", title: "안전·보건 관계 법령에 따른 안전보건 확보 의무 이행 여부 (중대재해처벌법 시행령 제4조, 제5조 관련)", shortTitle: "관계 법령 의무 이행", governanceItems: [] },
+  {
+    id: "law",
+    number: "⑥",
+    title: "경영자의 리더십 및 안전·보건 관계 법령에 따른 안전보건 확보 의무 이행 여부",
+    shortTitle: "관계 법령 의무 이행 (중처법 시행령 제4조, 제5조)",
+    governanceItems: [
+      {
+        id: "safety-budget",
+        title: "안전보건예산 편성 및 실적",
+        badge: "관리중",
+        status: "진행중",
+        description: "연간 안전보건예산 편성액과 현재 집행 실적을 추적합니다.",
+        metrics: [
+          { label: "2026년 편성", value: "120,000,000원", tone: "slate" },
+          { label: "집행 실적", value: "78,600,000원", tone: "teal" },
+          { label: "집행율", value: "65.5%", tone: "teal" },
+        ],
+      },
+    ],
+  },
   {
     id: "education",
     number: "⑦",

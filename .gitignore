@@ -40,6 +40,7 @@ static-live.log
 static-live.err.log
 local-dashboard.log
 local-dashboard.err.log
+.logs/
 nul
 
 # env files (can opt-in for committing if needed)

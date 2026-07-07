@@ -13,6 +13,7 @@
     "serve:local": "next start -p 3001 -H 0.0.0.0",
     "preview:static": "node scripts/local-static-server.mjs",
     "preview:fresh": "node scripts/preview-fresh.mjs",
+    "preview:hidden": "powershell -ExecutionPolicy Bypass -File scripts/start-preview-hidden.ps1",
     "lint": "eslint",
     "bot": "tsx src/bot/index.ts",
     "bot:deploy": "tsx src/bot/commands/deploy.ts"
