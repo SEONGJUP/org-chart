@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   IconBook2,
   IconBuilding,
@@ -27,7 +27,48 @@ type EvaluationChecklistItem = {
   checked?: boolean;
   rating?: ChecklistRating | "";
   note?: string;
+  content?: string;
+  maxScore?: number;
+  score?: number;
 };
+
+const contractorEvaluationChecklistTemplate: EvaluationChecklistItem[] = [
+  {
+    label: "A. 안전보건관리체계",
+    content: "수급업체의 안전보건목표, 경영방침 수립의 적정성 / 안전관리 조직구성, 책임자 지정 및 역할의 적정성",
+    maxScore: 20,
+    score: 0,
+    note: "",
+  },
+  {
+    label: "B. 위험성평가 및 실행수준",
+    content: "자체 위험성평가 실시 수준, 도급작업의 위험성평가 결과에 대한 이해수준 / 안전보건 교육 수행 여부 및 기록관리 적정성",
+    maxScore: 20,
+    score: 0,
+    note: "",
+  },
+  {
+    label: "C. 안전점검 및 이행확인",
+    content: "안전점검 및 모니터링(보호구 착용확인 포함) 여부 / 안전조치 이행 여부(도급업체 지도조언에 대한 이행 포함)",
+    maxScore: 20,
+    score: 0,
+    note: "",
+  },
+  {
+    label: "D. 운영관리",
+    content: "유해·위험물질 및 기계·기구·설비 안전성 확인 및 예방조치 여부 / 비상시 대비 및 피해 최소화 대책 수립 여부",
+    maxScore: 20,
+    score: 0,
+    note: "",
+  },
+  {
+    label: "E. 재해발생수준",
+    content: "최근 3년간 산업재해 발생 현황, 중대재해 발생 여부",
+    maxScore: 20,
+    score: 0,
+    note: "",
+  },
+];
 
 type LegalDuty = {
   id: string;
@@ -111,6 +152,46 @@ type Period = {
   endMonth: number;
   label: string;
   rangeLabel: string;
+};
+
+type SafetyCardReportRow = SafetyCard & {
+  dutyNumber: string;
+  dutyTitle: string;
+  target: number;
+  actual: number;
+  rate: number;
+  status: DutyStatus;
+  department: string;
+  budget: number;
+  quarters: boolean[];
+};
+
+type GovernanceReportRow = {
+  id: string;
+  dutyId: string;
+  dutyNumber: string;
+  dutyTitle: string;
+  itemTitle: string;
+  result: string;
+  score: number;
+  grade: string;
+  evidence: string;
+  managementType?: GovernanceManagementType;
+  sourceHistoryId?: string;
+  sourceHistoryLabel?: string;
+  excluded?: boolean;
+};
+
+type WorkplaceOverview = {
+  siteName: string;
+  title: string;
+  address: string;
+  industry: string;
+  employeeCount: string;
+  siteType: string;
+  client: string;
+  confirmer: string;
+  confirmationDate: string;
 };
 
 const legalDuties: LegalDuty[] = [
@@ -590,6 +671,17 @@ function getActual(card: SafetyCard, period: Period) {
   return Math.min(card.baseActual, Math.max(0, getTarget(card, period)));
 }
 
+function getDefaultQuarters(card: SafetyCard) {
+  if (card.cycleType === "DAILY" || card.cycleType === "MONTHLY") return [true, true, true, true];
+  if (card.cycleType === "ON_DEMAND") return [false, false, false, true];
+  const quarters = [false, false, false, false];
+  card.scheduledMonths.forEach((month) => {
+    const index = Math.min(3, Math.max(0, Math.ceil(month / 3) - 1));
+    quarters[index] = true;
+  });
+  return quarters;
+}
+
 function getRate(actual: number, target: number) {
   if (target === 0) return actual > 0 ? 100 : 0;
   return Math.min(100, Math.round((actual / target) * 100));
@@ -601,6 +693,102 @@ function getStatus(actual: number, target: number): DutyStatus {
   if (actual === 0 && target > 0) return "미완료";
   if (actual >= target) return "완료";
   return "진행중";
+}
+
+function reportGrade(score: number) {
+  if (score >= 90) return "우수";
+  if (score >= 75) return "양호";
+  if (score >= 60) return "보통";
+  return "개선필요";
+}
+
+function halfLabelToKey(half: EvaluationHistory["half"]) {
+  return String(half).includes("하") ? "H2" : "H1";
+}
+
+function getEvaluationHistoryLabel(history: EvaluationHistory) {
+  return `${history.year}년 ${halfLabelToKey(history.half) === "H2" ? "하반기" : "상반기"}`;
+}
+
+function getEvaluationHistoryOptions(type: GovernanceManagementType, reportYear: number) {
+  const config = governanceManagementConfigs[type];
+  const startYear = Math.min(2024, reportYear - 2);
+  const endYear = Math.max(reportYear, 2026);
+  const existing = new Map(config.histories.map((history) => [`${history.year}-${halfLabelToKey(history.half)}`, history]));
+
+  return Array.from({ length: endYear - startYear + 1 }, (_, yearIndex) => startYear + yearIndex)
+    .flatMap((year) => (["H1", "H2"] as const).map((half) => {
+      const history = existing.get(`${year}-${half}`);
+      const total = history?.total ?? (type === "MANAGER_EVALUATION" ? 4 : 24);
+      const completed = history?.completed ?? Math.max(0, total - (year === reportYear && half === "H2" ? 2 : 1));
+      const score = total > 0 ? Math.round((completed / total) * 100) : 0;
+      return {
+        id: history?.id ?? `${type.toLowerCase()}-${year}-${half.toLowerCase()}`,
+        year,
+        half,
+        label: history ? getEvaluationHistoryLabel(history) : `${year}년 ${half === "H2" ? "하반기" : "상반기"}`,
+        period: history?.period ?? `${year}.${half === "H1" ? "01.01 ~ " + year + ".06.30" : "07.01 ~ " + year + ".12.31"}`,
+        completed,
+        total,
+        score,
+        status: history?.status ?? "평가완료",
+      };
+    }))
+    .sort((a, b) => b.year - a.year || (b.half === "H2" ? 1 : -1));
+}
+
+function buildReportDefaults(period: Period) {
+  const safetyRows: SafetyCardReportRow[] = safetyCards.map((card) => {
+    const target = getTarget(card, period);
+    const actual = getActual(card, period);
+    const rate = getRate(actual, target);
+    const duty = legalDuties.find((item) => item.id === card.dutyId) ?? legalDuties[0];
+    return {
+      ...card,
+      dutyNumber: duty.number,
+      dutyTitle: duty.shortTitle,
+      target,
+      actual,
+      rate,
+      status: getStatus(actual, target),
+      department: "전체",
+      budget: 0,
+      quarters: getDefaultQuarters(card),
+    };
+  });
+
+  const governanceRows: GovernanceReportRow[] = legalDuties.flatMap((duty) => duty.governanceItems.map((item) => {
+    const score = typeof item.progress === "number" ? Math.round(item.progress) : item.status === "완료" ? 100 : 50;
+    return {
+      id: item.id,
+      dutyId: duty.id,
+      dutyNumber: duty.number,
+      dutyTitle: duty.shortTitle,
+      itemTitle: item.title,
+      result: item.badge,
+      score,
+      grade: reportGrade(score),
+      evidence: item.metrics.map((metric) => `${metric.label} ${metric.value}`).join(" / "),
+      managementType: item.managementType,
+      sourceHistoryId: item.managementType ? governanceManagementConfigs[item.managementType].histories[0]?.id : undefined,
+      sourceHistoryLabel: item.managementType && governanceManagementConfigs[item.managementType].histories[0] ? getEvaluationHistoryLabel(governanceManagementConfigs[item.managementType].histories[0]) : undefined,
+      excluded: false,
+    };
+  }));
+
+  const overview: WorkplaceOverview = {
+    siteName: "DEMO#1 현장(강원 삼척) - 건설업",
+    title: `${period.label} 중대재해처벌법 의무사항 이행 점검`,
+    address: "강원특별자치도 삼척시 가곡면 가곡천로 149-6",
+    industry: "건설업 > 기타 비주거용 건물 건설업",
+    employeeCount: "50명",
+    siteType: "건설현장",
+    client: "강원도",
+    confirmer: "데모컴퍼니 홍길동",
+    confirmationDate: `${period.year}년 ${String(period.endMonth).padStart(2, "0")}월 ${String(new Date(period.year, period.endMonth, 0).getDate()).padStart(2, "0")}일`,
+  };
+
+  return { overview, governanceRows, safetyRows, improvementNotes: "" };
 }
 
 function getCyclePolicy(card: SafetyCard) {
@@ -663,6 +851,17 @@ function evaluatorProfile(evaluator: string) {
 }
 
 function calculateFinalRating(checklist: EvaluationChecklistItem[]): ChecklistRating {
+  const scoredItems = checklist.filter((check) => typeof check.maxScore === "number" && check.maxScore > 0);
+  if (scoredItems.length > 0) {
+    const maxScore = scoredItems.reduce((sum, check) => sum + (check.maxScore ?? 0), 0);
+    const score = scoredItems.reduce((sum, check) => sum + (check.score ?? 0), 0);
+    const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+    if (percentage >= 90) return "우수";
+    if (percentage >= 80) return "양호";
+    if (percentage >= 70) return "보통";
+    return "미흡";
+  }
+
   const scores: Record<ChecklistRating, number> = { 우수: 4, 양호: 3, 보통: 2, 미흡: 1 };
   const ratings = checklist.map((check) => check.rating).filter(Boolean) as ChecklistRating[];
   if (ratings.length === 0) return "보통";
@@ -842,6 +1041,7 @@ function Overview({
 
 function GovernanceManagementModal({ item, viewerRole, onClose }: { item: GovernanceItem & { managementType: GovernanceManagementType }; viewerRole: ViewerRole; onClose: () => void }) {
   const config = governanceManagementConfigs[item.managementType];
+  const isContractorManagement = item.managementType === "CONTRACTOR_EVALUATION";
   const [histories, setHistories] = useState<EvaluationHistory[]>(config.histories);
   const [selectedHistoryId, setSelectedHistoryId] = useState(config.histories[0]?.id ?? "");
   const [selectedTargetId, setSelectedTargetId] = useState("");
@@ -858,29 +1058,53 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
   const [finalRating, setFinalRating] = useState<ChecklistRating>("보통");
   const [isFinalRatingEdited, setIsFinalRatingEdited] = useState(false);
   const [activeStep, setActiveStep] = useState<"CHECKLIST" | "OPINION">("CHECKLIST");
+  const opinionStepRef = useRef<HTMLDivElement | null>(null);
+  const keepOpinionStepAfterSaveRef = useRef(false);
   const historyRate = selectedHistory.total > 0 ? Math.round((selectedHistory.completed / selectedHistory.total) * 100) : 0;
-  const normalizeChecklist = (check: EvaluationChecklistItem): EvaluationChecklistItem => ({
+  const normalizeChecklist = useCallback((check: EvaluationChecklistItem, index = 0): EvaluationChecklistItem => ({
     ...check,
     rating: check.rating ?? (check.checked ? "우수" : ""),
     note: check.note ?? "",
-  });
-  const checklistRate = editableChecklist.length > 0 ? Math.round((editableChecklist.filter((check) => check.rating).length / editableChecklist.length) * 100) : 0;
+    content: check.content ?? (isContractorManagement ? contractorEvaluationChecklistTemplate[index]?.content ?? "" : undefined),
+    maxScore: check.maxScore ?? (isContractorManagement ? contractorEvaluationChecklistTemplate[index]?.maxScore ?? 20 : undefined),
+    score: check.score ?? (isContractorManagement ? 0 : undefined),
+  }), [isContractorManagement]);
+  const totalMaxScore = editableChecklist.reduce((sum, check) => sum + (check.maxScore ?? 0), 0);
+  const totalScore = editableChecklist.reduce((sum, check) => sum + (check.score ?? 0), 0);
+  const checklistRate = isContractorManagement
+    ? totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0
+    : editableChecklist.length > 0 ? Math.round((editableChecklist.filter((check) => check.rating).length / editableChecklist.length) * 100) : 0;
   const canEvaluate = viewerRole === "현장소장";
 
   useEffect(() => {
-    const nextChecklist = selectedTarget?.checklist.map((check) => normalizeChecklist(check)) ?? [];
+    const targetChecklist = selectedTarget?.checklist ?? [];
+    const sourceChecklist = isContractorManagement && targetChecklist.every((check) => !check.content)
+      ? contractorEvaluationChecklistTemplate
+      : targetChecklist;
+    const nextChecklist = sourceChecklist.map((check, index) => normalizeChecklist(check, index));
     setEditableChecklist(nextChecklist);
     setEvaluationStatus(selectedTarget?.status ?? "미평가");
     setFinalRating(calculateFinalRating(nextChecklist));
     setIsFinalRatingEdited(false);
-    setActiveStep("CHECKLIST");
-  }, [selectedTargetId, selectedHistoryId, selectedTarget]);
+    if (keepOpinionStepAfterSaveRef.current) {
+      keepOpinionStepAfterSaveRef.current = false;
+    } else {
+      setActiveStep("CHECKLIST");
+    }
+  }, [isContractorManagement, normalizeChecklist, selectedTargetId, selectedHistoryId, selectedTarget]);
 
   useEffect(() => {
     if (!isFinalRatingEdited) {
       setFinalRating(calculateFinalRating(editableChecklist));
     }
   }, [editableChecklist, isFinalRatingEdited]);
+
+  useEffect(() => {
+    if (activeStep !== "OPINION") return;
+    window.requestAnimationFrame(() => {
+      opinionStepRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [activeStep]);
 
   const selectHistory = (history: EvaluationHistory) => {
     setSelectedHistoryId(history.id);
@@ -910,7 +1134,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
         id: `${target.id}-${newYear}-${newHalf === "상반기" ? "h1" : "h2"}-${index}`,
         status: "미평가",
         evidence: 0,
-        checklist: target.checklist.map((check) => ({ ...normalizeChecklist(check), checked: false, rating: "", note: "" })),
+        checklist: (isContractorManagement ? contractorEvaluationChecklistTemplate : target.checklist).map((check, index) => ({ ...normalizeChecklist(check, index), checked: false, rating: "", note: "", score: isContractorManagement ? 0 : check.score })),
       })),
     };
 
@@ -930,9 +1154,13 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
     }
 
     const templateChecklist = selectedHistory.targets[0]?.checklist ?? [
-      { label: "R&R 및 평가 대상 여부 확인", checked: false, rating: "", note: "" },
-      { label: "업무수행 기록 확인", checked: false, rating: "", note: "" },
-      { label: "보완 필요사항 조치 여부 확인", checked: false, rating: "", note: "" },
+      ...(isContractorManagement
+        ? contractorEvaluationChecklistTemplate
+        : [
+            { label: "R&R 및 평가 대상 여부 확인", checked: false, rating: "", note: "" },
+            { label: "업무수행 기록 확인", checked: false, rating: "", note: "" },
+            { label: "보완 필요사항 조치 여부 확인", checked: false, rating: "", note: "" },
+          ]),
     ];
     const nextTarget: EvaluationTarget = {
       id: `${candidate.id}-${selectedHistory.id}-${Date.now()}`,
@@ -942,7 +1170,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
       evaluator: candidate.evaluator,
       evidence: 0,
       status: "미평가",
-      checklist: templateChecklist.map((check) => ({ ...normalizeChecklist(check), checked: false, rating: "", note: "" })),
+      checklist: templateChecklist.map((check, index) => ({ ...normalizeChecklist(check, index), checked: false, rating: "", note: "", score: isContractorManagement ? 0 : check.score })),
     };
 
     setHistories((items) => items.map((history) => history.id === selectedHistory.id
@@ -958,6 +1186,19 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
     setEditableChecklist((items) => items.map((check, itemIndex) => itemIndex === index ? { ...check, label } : check));
   };
 
+  const updateChecklistContent = (index: number, content: string) => {
+    setEditableChecklist((items) => items.map((check, itemIndex) => itemIndex === index ? { ...check, content } : check));
+  };
+
+  const updateChecklistScore = (index: number, score: number) => {
+    setEditableChecklist((items) => items.map((check, itemIndex) => {
+      if (itemIndex !== index) return check;
+      const maxScore = check.maxScore ?? 20;
+      const nextScore = Math.max(0, Math.min(maxScore, Number.isFinite(score) ? score : 0));
+      return { ...check, score: nextScore, checked: nextScore > 0 };
+    }));
+  };
+
   const updateChecklistRating = (index: number, rating: ChecklistRating) => {
     setEditableChecklist((items) => items.map((check, itemIndex) => itemIndex === index ? { ...check, checked: true, rating } : check));
   };
@@ -967,7 +1208,10 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
   };
 
   const addChecklistRow = () => {
-    setEditableChecklist((items) => [...items, { label: "새 평가 항목", checked: false, rating: "", note: "" }]);
+    setEditableChecklist((items) => [...items, isContractorManagement
+      ? { label: "새 항목", content: "", maxScore: 20, score: 0, checked: false, rating: "", note: "" }
+      : { label: "새 평가 항목", checked: false, rating: "", note: "" }
+    ]);
   };
 
   const removeChecklistRow = (index: number) => {
@@ -975,12 +1219,13 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
   };
 
   const completeChecklistStep = () => {
+    keepOpinionStepAfterSaveRef.current = true;
     if (selectedTarget) {
       setHistories((items) => items.map((history) => history.id === selectedHistory.id
         ? {
             ...history,
             targets: history.targets.map((target) => target.id === selectedTarget.id
-              ? { ...target, checklist: editableChecklist.map((check) => ({ ...check, checked: Boolean(check.rating) })) }
+              ? { ...target, checklist: editableChecklist.map((check) => ({ ...check, checked: isContractorManagement ? (check.score ?? 0) > 0 : Boolean(check.rating) })) }
               : target
             ),
           }
@@ -1005,7 +1250,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
           </button>
         </div>
 
-        <div className={`grid max-h-[calc(92vh-132px)] overflow-hidden ${selectedTarget ? "lg:grid-cols-[260px_minmax(0,1fr)]" : "lg:grid-cols-[330px_minmax(0,1fr)]"}`}>
+        <div className={`grid h-[calc(92vh-132px)] overflow-hidden ${selectedTarget ? "lg:grid-cols-[260px_minmax(0,1fr)]" : "lg:grid-cols-[330px_minmax(0,1fr)]"}`}>
           <aside className="overflow-y-auto border-r border-slate-200 bg-slate-50 p-5">
             <div className="mb-4 flex items-center justify-between">
               <div>
@@ -1095,7 +1340,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
             )}
           </aside>
 
-          <div className="min-w-0 overflow-hidden p-5">
+          <div className="min-w-0 overflow-y-auto p-5">
             <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-bold ${canEvaluate ? "border-teal-100 bg-teal-50/60 text-[#008d86]" : "border-slate-200 bg-slate-50 text-slate-500"}`}>
               현재 보기: <b className="font-black">{viewerRole}</b>
               <span className="ml-2">{canEvaluate ? "평가 체크리스트 수정, 의견 작성, 완료 처리가 가능합니다." : "평가 진행상태와 완료 결과만 확인할 수 있습니다."}</span>
@@ -1138,7 +1383,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
                 </div>
                 <div className="max-h-[58vh] space-y-2 overflow-y-auto pr-1">
                   {selectedHistory.targets.map((target) => (
-                    <button key={target.id} onClick={() => setSelectedTargetId(target.id)} className={`w-full rounded-xl border p-3 text-left transition ${selectedTarget?.id === target.id ? "border-[#00b7af] bg-teal-50/40" : "border-slate-200 hover:border-teal-200"}`}>
+                    <button key={target.id} onClick={() => setSelectedTargetId(target.id)} className={`w-full rounded-xl border p-3 text-left transition ${selectedTargetId === target.id ? "border-[#00b7af] bg-teal-50/40" : "border-slate-200 hover:border-teal-200"}`}>
                       <div className="flex items-center justify-between gap-2">
                         <b className="truncate text-sm font-black text-slate-900">{target.name}</b>
                         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ring-1 ${evaluationStatusClass(target.status)}`}>{target.status}</span>
@@ -1234,58 +1479,159 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
                               행 추가
                             </button>
                           </div>}
-                          <div className="max-h-[42vh] divide-y divide-slate-100 overflow-y-auto">
-                            {editableChecklist.map((check, index) => (
-                              <div key={`${selectedTarget.id}-check-${index}`} className="grid gap-2 px-4 py-3 xl:grid-cols-[minmax(240px,1fr)_auto_minmax(180px,0.55fr)_auto] xl:items-center">
-                                <input
-                                  value={check.label}
-                                  onChange={(event) => updateChecklistLabel(index, event.target.value)}
-                                  readOnly={!canEvaluate}
-                                  className={`min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
-                                  placeholder="평가 항목을 입력하세요"
-                                />
-                                <div className="flex gap-1 rounded-xl bg-slate-50 p-1 ring-1 ring-slate-100">
-                                  {(["우수", "양호", "보통", "미흡"] as ChecklistRating[]).map((rating) => (
-                                    <button
-                                      key={rating}
-                                      type="button"
-                                      onClick={() => canEvaluate && updateChecklistRating(index, rating)}
-                                      disabled={!canEvaluate}
-                                      className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${check.rating === rating
-                                        ? rating === "우수"
-                                          ? "bg-emerald-600 text-white shadow-sm"
-                                          : rating === "양호"
-                                            ? "bg-emerald-400 text-white shadow-sm"
-                                            : rating === "보통"
-                                              ? "bg-amber-400 text-white shadow-sm"
-                                              : "bg-rose-500 text-white shadow-sm"
-                                        : "bg-white text-slate-500 ring-1 ring-slate-200"} ${canEvaluate ? "hover:bg-teal-50 hover:text-[#008d86]" : "cursor-default opacity-80"}`}
-                                    >
-                                      {rating}
-                                    </button>
+                          {isContractorManagement ? (
+                            <div className="overflow-x-auto p-4">
+                              <table className="min-w-[980px] w-full border-separate border-spacing-0 overflow-hidden rounded-xl border border-slate-200 text-left text-xs">
+                                <thead>
+                                  <tr className="bg-teal-50 text-center text-slate-900">
+                                    <th rowSpan={2} className="w-[170px] border-b border-r border-slate-200 px-3 py-3 font-black">항목</th>
+                                    <th rowSpan={2} className="border-b border-r border-slate-200 px-3 py-3 font-black">점검내용</th>
+                                    <th colSpan={2} className="w-[130px] border-b border-r border-slate-200 px-3 py-2 font-black">평가결과</th>
+                                    <th rowSpan={2} className="w-[180px] border-b border-r border-slate-200 px-3 py-3 font-black">평가내용</th>
+                                    <th rowSpan={2} className="w-12 border-b border-slate-200 px-3 py-3 font-black">삭제</th>
+                                  </tr>
+                                  <tr className="bg-teal-50 text-center text-slate-900">
+                                    <th className="border-b border-r border-slate-200 px-3 py-2 font-black">배점</th>
+                                    <th className="border-b border-r border-slate-200 px-3 py-2 font-black">점수</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {editableChecklist.map((check, index) => (
+                                    <tr key={`${selectedTarget.id}-contractor-check-${index}`} className="bg-white">
+                                      <td className="border-b border-r border-slate-200 px-2 py-2 align-middle">
+                                        <input
+                                          value={check.label}
+                                          onChange={(event) => updateChecklistLabel(index, event.target.value)}
+                                          readOnly={!canEvaluate}
+                                          className={`w-full rounded-md border border-transparent px-2 py-1.5 text-xs font-black text-slate-700 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-transparent"}`}
+                                          placeholder="항목"
+                                        />
+                                      </td>
+                                      <td className="border-b border-r border-slate-200 px-2 py-2 align-middle">
+                                        <textarea
+                                          value={check.content ?? ""}
+                                          onChange={(event) => updateChecklistContent(index, event.target.value)}
+                                          readOnly={!canEvaluate}
+                                          rows={2}
+                                          className={`w-full resize-none rounded-md border border-transparent px-2 py-1.5 text-xs font-bold leading-5 text-slate-600 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-transparent"}`}
+                                          placeholder="점검내용"
+                                        />
+                                      </td>
+                                      <td className="border-b border-r border-slate-200 px-2 py-2 align-middle text-center">
+                                        <input
+                                          value={check.maxScore ?? 20}
+                                          readOnly
+                                          className="mx-auto h-9 w-11 rounded-md border border-slate-200 bg-white text-center text-xs font-black text-slate-700 outline-none"
+                                          aria-label="배점"
+                                        />
+                                      </td>
+                                      <td className="border-b border-r border-slate-200 px-2 py-2 align-middle text-center">
+                                        <input
+                                          type="number"
+                                          min={0}
+                                          max={check.maxScore ?? 20}
+                                          value={check.score ?? 0}
+                                          onChange={(event) => updateChecklistScore(index, Number(event.target.value))}
+                                          readOnly={!canEvaluate}
+                                          className={`mx-auto h-9 w-11 rounded-md border border-slate-200 text-center text-xs font-black text-slate-700 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
+                                          aria-label="점수"
+                                        />
+                                      </td>
+                                      <td className="border-b border-r border-slate-200 px-2 py-2 align-middle">
+                                        <input
+                                          value={check.note ?? ""}
+                                          onChange={(event) => updateChecklistNote(index, event.target.value)}
+                                          readOnly={!canEvaluate}
+                                          className={`h-9 w-full rounded-md border border-slate-200 px-2 text-xs font-medium text-slate-600 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
+                                          placeholder="평가내용"
+                                        />
+                                      </td>
+                                      <td className="border-b border-slate-200 px-2 py-2 text-center align-middle">
+                                        {canEvaluate ? (
+                                          <button
+                                            onClick={() => removeChecklistRow(index)}
+                                            className="grid h-8 w-8 place-items-center rounded-md text-lg font-light text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                                            aria-label="평가 항목 삭제"
+                                          >
+                                            ×
+                                          </button>
+                                        ) : (
+                                          <span className="text-slate-300">-</span>
+                                        )}
+                                      </td>
+                                    </tr>
                                   ))}
+                                  {editableChecklist.length === 0 && (
+                                    <tr>
+                                      <td colSpan={6} className="bg-white px-4 py-6 text-center text-sm font-bold text-slate-400">
+                                        체크리스트 항목이 없습니다. 행 추가 버튼으로 평가 항목을 추가하세요.
+                                      </td>
+                                    </tr>
+                                  )}
+                                  <tr className="bg-slate-50 text-center text-sm font-black text-slate-950">
+                                    <td colSpan={2} className="border-r border-slate-200 px-3 py-3">합계</td>
+                                    <td className="border-r border-slate-200 px-3 py-3">{totalMaxScore.toLocaleString()}</td>
+                                    <td className="border-r border-slate-200 px-3 py-3">{totalScore.toLocaleString()}</td>
+                                    <td className="border-r border-slate-200 px-3 py-3" />
+                                    <td className="px-3 py-3" />
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          ) : (
+                            <div className="divide-y divide-slate-100">
+                              {editableChecklist.map((check, index) => (
+                                <div key={`${selectedTarget.id}-check-${index}`} className="grid gap-2 px-4 py-3 xl:grid-cols-[minmax(240px,1fr)_auto_minmax(180px,0.55fr)_auto] xl:items-center">
+                                  <input
+                                    value={check.label}
+                                    onChange={(event) => updateChecklistLabel(index, event.target.value)}
+                                    readOnly={!canEvaluate}
+                                    className={`min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
+                                    placeholder="평가 항목을 입력하세요"
+                                  />
+                                  <div className="flex gap-1 rounded-xl bg-slate-50 p-1 ring-1 ring-slate-100">
+                                    {(["우수", "양호", "보통", "미흡"] as ChecklistRating[]).map((rating) => (
+                                      <button
+                                        key={rating}
+                                        type="button"
+                                        onClick={() => canEvaluate && updateChecklistRating(index, rating)}
+                                        disabled={!canEvaluate}
+                                        className={`rounded-lg px-3 py-1.5 text-xs font-black transition ${check.rating === rating
+                                          ? rating === "우수"
+                                            ? "bg-emerald-600 text-white shadow-sm"
+                                            : rating === "양호"
+                                              ? "bg-emerald-400 text-white shadow-sm"
+                                              : rating === "보통"
+                                                ? "bg-amber-400 text-white shadow-sm"
+                                                : "bg-rose-500 text-white shadow-sm"
+                                          : "bg-white text-slate-500 ring-1 ring-slate-200"} ${canEvaluate ? "hover:bg-teal-50 hover:text-[#008d86]" : "cursor-default opacity-80"}`}
+                                      >
+                                        {rating}
+                                      </button>
+                                    ))}
+                                  </div>
+                                  <input
+                                    value={check.note ?? ""}
+                                    onChange={(event) => updateChecklistNote(index, event.target.value)}
+                                    readOnly={!canEvaluate}
+                                    className={`min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
+                                    placeholder="비고를 입력하세요"
+                                  />
+                                  {canEvaluate ? <button
+                                    onClick={() => removeChecklistRow(index)}
+                                    className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
+                                  >
+                                    삭제
+                                  </button> : <span className="rounded-lg bg-slate-50 px-3 py-2 text-center text-xs font-black text-slate-400">확인</span>}
                                 </div>
-                                <input
-                                  value={check.note ?? ""}
-                                  onChange={(event) => updateChecklistNote(index, event.target.value)}
-                                  readOnly={!canEvaluate}
-                                  className={`min-w-0 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 outline-none transition ${canEvaluate ? "bg-white focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" : "bg-slate-50"}`}
-                                  placeholder="비고를 입력하세요"
-                                />
-                                {canEvaluate ? <button
-                                  onClick={() => removeChecklistRow(index)}
-                                  className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"
-                                >
-                                  삭제
-                                </button> : <span className="rounded-lg bg-slate-50 px-3 py-2 text-center text-xs font-black text-slate-400">확인</span>}
-                              </div>
-                            ))}
-                            {editableChecklist.length === 0 && (
-                              <div className="px-4 py-6 text-center text-sm font-bold text-slate-400">
-                                체크리스트 항목이 없습니다. 행 추가 버튼으로 평가 항목을 추가하세요.
-                              </div>
-                            )}
-                          </div>
+                              ))}
+                              {editableChecklist.length === 0 && (
+                                <div className="px-4 py-6 text-center text-sm font-bold text-slate-400">
+                                  체크리스트 항목이 없습니다. 행 추가 버튼으로 평가 항목을 추가하세요.
+                                </div>
+                              )}
+                            </div>
+                          )}
                           {canEvaluate && <div className="flex justify-end border-t border-slate-100 px-4 py-3">
                             <button onClick={completeChecklistStep} className="rounded-lg bg-slate-950 px-4 py-2 text-xs font-black text-white transition hover:bg-[#00a099]">
                               체크리스트 입력 완료
@@ -1295,7 +1641,7 @@ function GovernanceManagementModal({ item, viewerRole, onClose }: { item: Govern
                       )}
                     </div>
 
-                    <div className="rounded-xl border border-slate-200 bg-white">
+                    <div ref={opinionStepRef} className="scroll-mt-4 rounded-xl border border-slate-200 bg-white">
                       <button onClick={() => setActiveStep("OPINION")} className="flex w-full items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3 text-left">
                         <div>
                           <p className="text-xs font-black text-[#00a099]">STEP 2</p>
@@ -1483,6 +1829,413 @@ function DutyCards({ dutyStats, viewerRole }: { dutyStats: Array<LegalDuty & { c
   );
 }
 
+function InspectionReportPeriodModal({ initialPeriod, onCancel, onConfirm }: { initialPeriod: Period; onCancel: () => void; onConfirm: (period: Period) => void }) {
+  const [mode, setMode] = useState<PeriodMode>(initialPeriod.mode);
+  const [year, setYear] = useState(initialPeriod.year);
+  const [half, setHalf] = useState<"H1" | "H2">(initialPeriod.half);
+  const [month, setMonth] = useState(initialPeriod.month);
+  const reportPeriod = useMemo(() => getPeriod(mode, year, half, month), [mode, year, half, month]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+        <div className="border-b border-slate-200 px-6 py-5">
+          <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">SAFEBUDDY REPORT</p>
+          <h3 className="mt-1 text-2xl font-black text-slate-950">보고서 기간 선택</h3>
+          <p className="mt-1 text-sm font-bold text-slate-500">선택한 기간의 대시보드 데이터를 보고서 기본값으로 불러옵니다.</p>
+        </div>
+        <div className="p-6">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <select value={year} onChange={(event) => setYear(Number(event.target.value))} className="control-select">
+                {[2024, 2025, 2026, 2027, 2028].map((value) => <option key={value} value={value}>{value}년</option>)}
+              </select>
+              <div className="segmented">
+                <button onClick={() => setMode("YEAR")} className={mode === "YEAR" ? "active" : ""}>년도</button>
+                <button onClick={() => setMode("HALF")} className={mode === "HALF" ? "active" : ""}>반기</button>
+                <button onClick={() => setMode("MONTH")} className={mode === "MONTH" ? "active" : ""}>월</button>
+              </div>
+              {mode === "HALF" && (
+                <div className="segmented">
+                  <button onClick={() => setHalf("H1")} className={half === "H1" ? "active" : ""}>상반기</button>
+                  <button onClick={() => setHalf("H2")} className={half === "H2" ? "active" : ""}>하반기</button>
+                </div>
+              )}
+              {mode === "MONTH" && (
+                <select value={month} onChange={(event) => setMonth(Number(event.target.value))} className="control-select">
+                  {Array.from({ length: 11 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>1월~{value}월</option>)}
+                </select>
+              )}
+            </div>
+            <div className="mt-4 rounded-xl border border-teal-100 bg-teal-50 px-4 py-3 text-sm font-bold text-teal-800">{reportPeriod.rangeLabel}</div>
+          </div>
+          <div className="mt-5 flex justify-end gap-2">
+            <button onClick={onCancel} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-black text-slate-500 transition hover:bg-slate-50">취소</button>
+            <button onClick={() => onConfirm(reportPeriod)} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#00a099]">안전카드 생성</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InspectionReportModal({ reportPeriod, onClose }: { reportPeriod: Period; onClose: () => void }) {
+  const defaults = useMemo(() => buildReportDefaults(reportPeriod), [reportPeriod]);
+  const [overview, setOverview] = useState<WorkplaceOverview>(defaults.overview);
+  const [improvementNotes, setImprovementNotes] = useState(defaults.improvementNotes);
+  const [governanceRows, setGovernanceRows] = useState<GovernanceReportRow[]>(defaults.governanceRows);
+  const [safetyRows, setSafetyRows] = useState<SafetyCardReportRow[]>(defaults.safetyRows);
+  const [historyPickerRow, setHistoryPickerRow] = useState<GovernanceReportRow | null>(null);
+
+  const dutyGroups = useMemo(() => legalDuties.map((duty) => {
+    const governance = governanceRows.filter((row) => row.dutyId === duty.id);
+    const safetyCardsForDuty = safetyRows.filter((row) => row.dutyId === duty.id);
+    const governanceScores = governance.filter((row) => !row.excluded).map((row) => row.score);
+    const cardScores = safetyCardsForDuty.map((row) => row.rate);
+    const scores = [...governanceScores, ...cardScores];
+    const score = scores.length > 0 ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length) : 0;
+    return {
+      dutyId: duty.id,
+      label: `${duty.number} ${duty.shortTitle}`,
+      title: duty.title,
+      score,
+      result: score >= 60 ? "예" : "보완",
+      grade: reportGrade(score),
+      governance,
+      safetyCards: safetyCardsForDuty,
+    };
+  }), [governanceRows, safetyRows]);
+
+  const totalScore = dutyGroups.length > 0 ? Math.round(dutyGroups.reduce((sum, row) => sum + row.score, 0) / dutyGroups.length) : 0;
+
+  const updateOverview = (key: keyof WorkplaceOverview, value: string) => {
+    setOverview((item) => ({ ...item, [key]: value }));
+  };
+
+  const updateGovernanceRow = (id: string, key: keyof GovernanceReportRow, value: string | number | boolean) => {
+    setGovernanceRows((items) => items.map((row) => {
+      if (row.id !== id) return row;
+      if (key === "score") {
+        const score = Math.max(0, Math.min(100, Number(value) || 0));
+        return { ...row, score, grade: reportGrade(score) };
+      }
+      return { ...row, [key]: value } as GovernanceReportRow;
+    }));
+  };
+
+  const applyEvaluationHistory = (rowId: string, option: ReturnType<typeof getEvaluationHistoryOptions>[number]) => {
+    setGovernanceRows((items) => items.map((row) => {
+      if (row.id !== rowId) return row;
+      const score = Math.max(0, Math.min(100, option.score));
+      return {
+        ...row,
+        score,
+        grade: reportGrade(score),
+        result: `${option.completed}/${option.total} 평가완료`,
+        evidence: `${option.label} 평가 데이터 · ${option.period}`,
+        sourceHistoryId: option.id,
+        sourceHistoryLabel: option.label,
+        excluded: false,
+      };
+    }));
+    setHistoryPickerRow(null);
+  };
+
+  const updateSafetyRow = (id: string, key: keyof SafetyCardReportRow, value: string | number) => {
+    setSafetyRows((items) => items.map((row) => {
+      if (row.id !== id) return row;
+      const next = { ...row, [key]: value } as SafetyCardReportRow;
+      if (key === "target" || key === "actual") {
+        const target = Math.max(0, Number(next.target) || 0);
+        const actual = Math.max(0, Number(next.actual) || 0);
+        next.target = target;
+        next.actual = actual;
+        next.rate = getRate(actual, target);
+        next.status = getStatus(actual, target);
+      }
+      if (key === "evidence") {
+        next.evidence = Math.max(0, Number(value) || 0);
+      }
+      if (key === "rate") {
+        next.rate = Math.max(0, Math.min(100, Number(value) || 0));
+      }
+      return next;
+    }));
+  };
+
+  const toggleSafetyQuarter = (id: string, quarterIndex: number) => {
+    setSafetyRows((items) => items.map((row) => {
+      if (row.id !== id) return row;
+      const quarters = [...row.quarters];
+      quarters[quarterIndex] = !quarters[quarterIndex];
+      return { ...row, quarters };
+    }));
+  };
+
+  return (
+    <>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[94vh] w-full max-w-[1500px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+          <div>
+            <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">SAFEBUDDY REPORT</p>
+            <h3 className="mt-1 text-2xl font-black text-slate-950">중처법 이행점검 보고서 만들기</h3>
+            <p className="mt-1 text-sm font-bold text-slate-500">{reportPeriod.rangeLabel}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => window.print()} className="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#00a099]">인쇄</button>
+            <button onClick={onClose} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-black text-slate-500 transition hover:bg-slate-100 hover:text-slate-800">닫기</button>
+          </div>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto bg-[#f5f8f9] p-5">
+          <section className="rounded-2xl border border-teal-100 bg-teal-50 p-5 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">고정 보고기간</p>
+                <h4 className="mt-1 text-lg font-black text-slate-950">{reportPeriod.label}</h4>
+                <p className="mt-1 text-sm font-bold text-teal-800">{reportPeriod.rangeLabel}</p>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1.5 text-xs font-black text-[#008d86] ring-1 ring-teal-100">기간 변경 불가</span>
+            </div>
+          </section>
+
+          <div className="mt-5 space-y-5">
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">SECTION 1</p>
+              <h4 className="mt-1 text-lg font-black text-slate-950">사업장 개요</h4>
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                {[
+                  ["siteName", "현장명"],
+                  ["title", "제목"],
+                  ["address", "사업장주소"],
+                  ["industry", "주업종"],
+                  ["employeeCount", "상시근로자 수"],
+                  ["siteType", "사업장유형"],
+                  ["client", "발주처"],
+                  ["confirmer", "확인자"],
+                  ["confirmationDate", "확인일"],
+                ].map(([key, label]) => (
+                  <label key={key} className={key === "title" || key === "address" ? "md:col-span-2 text-xs font-black text-slate-400" : "text-xs font-black text-slate-400"}>
+                    {label}
+                    <input value={overview[key as keyof WorkplaceOverview]} onChange={(event) => updateOverview(key as keyof WorkplaceOverview, event.target.value)} className="mt-1 h-10 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 outline-none focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" />
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">SECTION 2</p>
+                  <h4 className="mt-1 text-lg font-black text-slate-950">주요 개선사항 및 점검항목 집계</h4>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-black text-slate-400">총점</p>
+                  <b className="text-3xl font-black text-[#008d86]">{totalScore}점</b>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(380px,1.05fr)_minmax(0,0.95fr)]">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-2 text-xs font-black text-slate-500">점검항목별 집계 점수</p>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    {dutyGroups.map((group) => (
+                      <div key={`${group.dutyId}-section2-summary`} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="min-w-0 truncate text-xs font-black text-slate-700" title={group.label}>{group.label}</p>
+                          <span className="shrink-0 rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-slate-500 ring-1 ring-slate-200">{group.grade}</span>
+                        </div>
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-slate-100">
+                            <div className="h-2 rounded-full bg-[#00b7af]" style={{ width: `${group.score}%` }} />
+                          </div>
+                          <b className="w-10 text-right text-sm font-black text-[#008d86]">{group.score}</b>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-2 text-xs font-black text-slate-500">주요 개선사항</p>
+                  <textarea value={improvementNotes} onChange={(event) => setImprovementNotes(event.target.value)} className="min-h-56 w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 outline-none focus:border-[#00b7af] focus:ring-2 focus:ring-teal-100" />
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">SECTION 3</p>
+                  <h4 className="mt-1 text-lg font-black text-slate-950">이행점검 점수표</h4>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3">
+                {dutyGroups.map((group) => (
+                  <article key={group.dutyId} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-black text-slate-900">{group.label}</p>
+                        <p className="mt-1 text-xs font-bold text-slate-400">{group.title}</p>
+                      </div>
+                      <div className="flex items-center gap-3 rounded-xl bg-white px-3 py-2 ring-1 ring-slate-100">
+                        <div className="h-2 w-28 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-[#00b7af]" style={{ width: `${group.score}%` }} /></div>
+                        <b className="text-lg font-black text-[#008d86]">{group.score}점</b>
+                        <span className="rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-black text-[#008d86] ring-1 ring-teal-100">{group.grade}</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-black text-slate-500 ring-1 ring-slate-200">{group.result}</span>
+                      </div>
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      <div className="rounded-xl bg-white p-3 ring-1 ring-slate-100">
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-xs font-black text-[#00a099]">거버넌스 평가결과</p>
+                          <span className="text-[10px] font-black text-slate-400">{group.governance.length}건</span>
+                        </div>
+                        <div className="space-y-2">
+                          {false && (<div className="grid min-w-[1120px] gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center text-[10px] font-black text-slate-500 xl:grid-cols-[minmax(260px,1.15fr)_132px_minmax(260px,1fr)_128px_150px_minmax(190px,0.75fr)]">
+                            <span>안전카드</span>
+                            <span>추진일정(분기)</span>
+                            <span>목표 / 실적 / 달성 / 증빙</span>
+                            <span>담당부서</span>
+                            <span>예산</span>
+                            <span>상태</span>
+                          </div>)}
+                          {group.governance.length > 0 ? group.governance.map((row) => (
+                            <div key={row.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                              <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_72px]">
+                                <input value={row.itemTitle} onChange={(event) => updateGovernanceRow(row.id, "itemTitle", event.target.value)} className="h-9 min-w-0 rounded-lg border border-slate-200 bg-white px-2 text-xs font-black text-slate-800 outline-none focus:border-[#00b7af]" />
+                                <input type="number" min={0} max={100} value={row.score} onChange={(event) => updateGovernanceRow(row.id, "score", Number(event.target.value))} className="h-9 rounded-lg border border-slate-200 bg-white text-center text-xs font-black text-[#008d86] outline-none focus:border-[#00b7af]" />
+                              </div>
+                              {row.managementType && (
+                                <div className="mt-2 flex flex-wrap items-center gap-2 rounded-xl border border-teal-100 bg-white px-3 py-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setHistoryPickerRow(row)}
+                                    disabled={row.excluded}
+                                    className="rounded-lg border border-teal-200 bg-teal-50 px-3 py-1.5 text-xs font-black text-[#008d86] transition hover:bg-teal-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400"
+                                  >
+                                    평가 데이터 선택
+                                  </button>
+                                  <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-500">{row.excluded ? "평가 미대상으로 집계 제외" : row.sourceHistoryLabel ?? "선택된 평가 데이터 없음"}</span>
+                                  <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-black text-slate-500 ring-1 ring-slate-200">
+                                    <input type="checkbox" checked={Boolean(row.excluded)} onChange={(event) => updateGovernanceRow(row.id, "excluded", event.target.checked)} className="h-4 w-4 accent-[#00b7af]" />
+                                    평가 미대상
+                                  </label>
+                                </div>
+                              )}
+                              <div className="mt-2 grid gap-2 md:grid-cols-3">
+                                <input value={row.result} onChange={(event) => updateGovernanceRow(row.id, "result", event.target.value)} className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 outline-none focus:border-[#00b7af]" />
+                                <input value={row.grade} onChange={(event) => updateGovernanceRow(row.id, "grade", event.target.value)} className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 outline-none focus:border-[#00b7af]" />
+                                <input value={row.evidence} onChange={(event) => updateGovernanceRow(row.id, "evidence", event.target.value)} className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 outline-none focus:border-[#00b7af]" />
+                              </div>
+                            </div>
+                          )) : (
+                            <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-400">거버넌스 평가 항목 없음</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-white p-3 ring-1 ring-slate-100">
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-xs font-black text-[#00a099]">안전카드 실적</p>
+                          <span className="text-[10px] font-black text-slate-400">{group.safetyCards.length}개</span>
+                        </div>
+                        <div className="space-y-2 overflow-x-auto">
+                          <div className="grid min-w-[1040px] gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-center text-[10px] font-black text-slate-500 xl:grid-cols-[minmax(210px,0.95fr)_132px_minmax(280px,1.12fr)_140px_160px_minmax(190px,0.75fr)]">
+                            <span>안전카드</span>
+                            <span>추진일정(분기)</span>
+                            <span>목표 / 실적 / 달성 / 증빙</span>
+                            <span>담당부서</span>
+                            <span>예산</span>
+                            <span>상태</span>
+                          </div>
+                          {group.safetyCards.length > 0 ? group.safetyCards.map((row) => (
+                            <div key={row.id} className="min-w-0 rounded-lg bg-white px-3 py-2.5 text-xs ring-1 ring-slate-100">
+                              <div className="grid min-w-[1040px] gap-2 xl:grid-cols-[minmax(210px,0.95fr)_132px_minmax(280px,1.12fr)_140px_160px_minmax(190px,0.75fr)] xl:items-center">
+                                <div className="min-w-0 px-1">
+                                  <span className="block min-w-0 truncate text-[10px] font-black text-slate-400" title={row.category}>{row.category}</span>
+                                  <span className="mt-0.5 block min-w-0 truncate font-black text-slate-800" title={row.name}>{row.name}</span>
+                                </div>
+                                <div className="flex items-center justify-center gap-1">
+                                  {row.quarters.map((checked, index) => (
+                                    <label key={`${row.id}-q${index}`} className="flex h-6 w-6 cursor-pointer items-center justify-center">
+                                      <input type="checkbox" checked={checked} onChange={() => toggleSafetyQuarter(row.id, index)} className="peer sr-only" />
+                                      <span className="flex h-6 w-6 items-center justify-center rounded-md border border-slate-300 bg-white text-[10px] font-black text-slate-400 peer-checked:border-[#00b7af] peer-checked:bg-[#00b7af] peer-checked:text-white">{index + 1}</span>
+                                    </label>
+                                  ))}
+                                </div>
+                                <div className="grid grid-cols-4 gap-1.5">
+                                  <label className="text-[10px] font-black text-slate-400">목표<input type="number" value={row.target} onChange={(event) => updateSafetyRow(row.id, "target", Number(event.target.value))} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white text-center text-xs font-black text-slate-700 outline-none focus:border-[#00b7af]" /></label>
+                                  <label className="text-[10px] font-black text-slate-400">실적<input type="number" value={row.actual} onChange={(event) => updateSafetyRow(row.id, "actual", Number(event.target.value))} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white text-center text-xs font-black text-slate-700 outline-none focus:border-[#00b7af]" /></label>
+                                  <label className="text-[10px] font-black text-slate-400">달성<input type="number" value={row.rate} onChange={(event) => updateSafetyRow(row.id, "rate", Number(event.target.value))} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white text-center text-xs font-black text-[#008d86] outline-none focus:border-[#00b7af]" /></label>
+                                  <label className="text-[10px] font-black text-slate-400">증빙<input type="number" value={row.evidence} onChange={(event) => updateSafetyRow(row.id, "evidence", Number(event.target.value))} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white text-center text-xs font-black text-slate-700 outline-none focus:border-[#00b7af]" /></label>
+                                </div>
+                                <label className="text-[10px] font-black text-slate-400">담당부서<input value={row.department} onChange={(event) => updateSafetyRow(row.id, "department", event.target.value)} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-600 outline-none focus:border-[#00b7af]" /></label>
+                                <label className="relative text-[10px] font-black text-slate-400">예산<input type="number" value={row.budget} onChange={(event) => updateSafetyRow(row.id, "budget", Number(event.target.value))} className="mt-1 h-7 w-full rounded-lg border border-slate-200 bg-white pl-2 pr-7 text-right text-xs font-bold text-slate-600 outline-none focus:border-[#00b7af]" /><span className="pointer-events-none absolute bottom-1.5 right-2 text-[10px] font-black text-slate-400">원</span></label>
+                                <div className="flex min-w-0 items-center gap-2">
+                                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">{getCyclePolicy(row).label}</span>
+                                  <div className="h-1.5 min-w-12 flex-1 rounded-full bg-slate-100">
+                                    <div className={`h-1.5 rounded-full ${progressClass(row.status)}`} style={{ width: `${row.rate}%` }} />
+                                  </div>
+                                  <span className="w-8 shrink-0 text-right font-black text-[#008d86]">{row.rate}%</span>
+                                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-black ${miniStatusClass(row.status)}`}>{row.status === "해당없음" ? "목표없음" : row.status}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )) : (
+                            <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-400">연결 안전카드 없음</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    {historyPickerRow?.managementType && (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+          <div className="flex items-start justify-between gap-3 border-b border-slate-200 px-6 py-5">
+            <div>
+              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">EVALUATION DATA</p>
+              <h4 className="mt-1 text-xl font-black text-slate-950">반기별 평가 데이터 선택</h4>
+              <p className="mt-1 text-sm font-bold text-slate-500">{historyPickerRow.itemTitle}</p>
+            </div>
+            <button onClick={() => setHistoryPickerRow(null)} className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-black text-slate-500 transition hover:bg-slate-100">닫기</button>
+          </div>
+          <div className="max-h-[64vh] overflow-y-auto p-5">
+            <div className="grid gap-2">
+              {getEvaluationHistoryOptions(historyPickerRow.managementType, reportPeriod.year).map((option) => (
+                <button
+                  key={`${historyPickerRow.id}-${option.id}`}
+                  type="button"
+                  onClick={() => applyEvaluationHistory(historyPickerRow.id, option)}
+                  className={`rounded-xl border p-4 text-left transition hover:border-[#00b7af] hover:bg-teal-50/40 ${historyPickerRow.sourceHistoryId === option.id ? "border-[#00b7af] bg-teal-50/50" : "border-slate-200 bg-white"}`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-black text-slate-900">{option.label}</p>
+                      <p className="mt-1 text-xs font-bold text-slate-400">{option.period}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-50 px-2.5 py-1 text-xs font-black text-slate-600 ring-1 ring-slate-200">{option.completed}/{option.total}</span>
+                      <span className="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-black text-[#008d86] ring-1 ring-teal-100">{option.score}점</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
+  );
+}
+
 function SafetyCardTable({ rows, period }: { rows: Array<SafetyCard & { duty: LegalDuty; target: number; actual: number; rate: number; status: DutyStatus }>; period: Period }) {
   return (
     <section id="safety-card-detail" className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -1541,6 +2294,8 @@ export default function HalfYearInspectionPage() {
   const [half, setHalf] = useState<"H1" | "H2">("H1");
   const [month, setMonth] = useState(6);
   const [viewerRole, setViewerRole] = useState<ViewerRole>("현장소장");
+  const [isReportPeriodModalOpen, setIsReportPeriodModalOpen] = useState(false);
+  const [selectedReportPeriod, setSelectedReportPeriod] = useState<Period | null>(null);
   const period = useMemo(() => getPeriod(mode, year, half, month), [mode, year, half, month]);
 
   const rows = useMemo(() => safetyCards.map((card) => {
@@ -1591,7 +2346,7 @@ export default function HalfYearInspectionPage() {
                   <span className="header-action-icon"><IconClipboardCheck size={17} /></span>
                   <span>안전보건목표 및 세부추진계획</span>
                 </button>
-                <button className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white">
+                <button onClick={() => setIsReportPeriodModalOpen(true)} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-black text-white">
                   <IconReportAnalytics size={17} />중처법 이행점검 보고서 만들기
                 </button>
               </div>
@@ -1605,6 +2360,17 @@ export default function HalfYearInspectionPage() {
           </div>
         </main>
       </div>
+      {isReportPeriodModalOpen && (
+        <InspectionReportPeriodModal
+          initialPeriod={period}
+          onCancel={() => setIsReportPeriodModalOpen(false)}
+          onConfirm={(reportPeriod) => {
+            setIsReportPeriodModalOpen(false);
+            setSelectedReportPeriod(reportPeriod);
+          }}
+        />
+      )}
+      {selectedReportPeriod && <InspectionReportModal reportPeriod={selectedReportPeriod} onClose={() => setSelectedReportPeriod(null)} />}
       <style jsx global>{`
         .control-select {
           height: 40px;
