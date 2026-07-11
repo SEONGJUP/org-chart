@@ -45,7 +45,7 @@ const complianceChecks = [
 
 export default function SeiimRndPage() {
   return (
-    <main className="min-h-screen bg-[#f5f8f9] text-slate-950">
+    <main className="min-h-screen bg-white text-slate-950">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-5 py-5 md:px-8">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008d86]">
@@ -57,7 +57,7 @@ export default function SeiimRndPage() {
       <section className="bg-white">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-14 pt-6 md:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(440px,1fr)] lg:items-center">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-700 ring-1 ring-cyan-100">
+            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-black text-cyan-700 ring-1 ring-cyan-100">
               <IconShieldCheck size={15} /> SEIIM R&D ENGINE
             </p>
             <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
@@ -69,33 +69,33 @@ export default function SeiimRndPage() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               {["원본 비의존", "화면 기반 획득", "이벤트 추론", "법적 정합성 검증", "문서자동화"].map((item) => (
-                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700">
+                <span key={item} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700">
                   {item}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-5 shadow-2xl shadow-cyan-950/10">
-            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-[#00b7af] to-emerald-300" />
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-cyan-950/10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-white border-b border-cyan-200" />
+            <div className="rounded-xl border border-slate-200 bg-white p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-black tracking-[0.18em] text-cyan-200">SCREEN CAPTURE LAYER</p>
-                  <h2 className="mt-1 text-xl font-black text-white">비접근 환경 영상 표준화</h2>
+                  <p className="text-xs font-black tracking-[0.18em] text-cyan-700">SCREEN CAPTURE LAYER</p>
+                  <h2 className="mt-1 text-xl font-black text-slate-950">비접근 환경 영상 표준화</h2>
                 </div>
-                <IconDeviceDesktopAnalytics size={34} className="text-cyan-200" />
+                <IconDeviceDesktopAnalytics size={34} className="text-cyan-700" />
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {inputs.map((input) => (
-                  <div key={input.title} className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
+                  <div key={input.title} className="rounded-xl border border-slate-200 bg-white p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <p className="font-black text-white">{input.title}</p>
-                      <span className="text-xs font-black text-cyan-200">{input.strength}%</span>
+                      <p className="font-black text-slate-950">{input.title}</p>
+                      <span className="text-xs font-black text-cyan-700">{input.strength}%</span>
                     </div>
-                    <p className="mt-2 min-h-10 text-xs font-semibold leading-5 text-slate-300">{input.desc}</p>
-                    <div className="mt-3 h-2 rounded-full bg-white/10">
-                      <div className="h-2 rounded-full bg-cyan-300" style={{ width: `${input.strength}%` }} />
+                    <p className="mt-2 min-h-10 text-xs font-semibold leading-5 text-slate-500">{input.desc}</p>
+                    <div className="mt-3 h-2 rounded-full bg-white ring-1 ring-slate-200">
+                      <div className="h-2 rounded-full bg-white border-r-2 border-cyan-500" style={{ width: `${input.strength}%` }} />
                     </div>
                   </div>
                 ))}
@@ -123,7 +123,7 @@ export default function SeiimRndPage() {
               <article key={item.step} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-slate-400">{item.step}</span>
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-cyan-700 ring-1 ring-cyan-100">
                     <Icon size={21} />
                   </span>
                 </div>
@@ -146,7 +146,7 @@ export default function SeiimRndPage() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
             {eventTypes.map((event, index) => (
-              <div key={event} className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
+              <div key={event} className="rounded-xl bg-white p-4 ring-1 ring-slate-100">
                 <span className="text-xs font-black text-slate-400">E{String(index + 1).padStart(2, "0")}</span>
                 <p className="mt-2 text-sm font-black leading-5 text-slate-800">{event}</p>
               </div>
@@ -164,12 +164,12 @@ export default function SeiimRndPage() {
           </div>
           <div className="mt-5 space-y-3">
             {complianceChecks.map((check) => (
-              <div key={check.label} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+              <div key={check.label} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3">
                 <div>
                   <p className="text-sm font-black text-slate-800">{check.label}</p>
                   <p className="mt-0.5 text-xs font-bold text-slate-400">{check.value}</p>
                 </div>
-                <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-black text-[#008d86] ring-1 ring-teal-100">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#008d86] ring-1 ring-teal-100">
                   {check.status}
                 </span>
               </div>

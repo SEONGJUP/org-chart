@@ -46,10 +46,9 @@ export default function IndexPage() {
 
           <Link
             href="/seiim-rnd"
-            className="group relative flex items-center gap-6 bg-white rounded-2xl border border-cyan-200 hover:border-cyan-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-0.5 overflow-hidden"
+            className="group relative flex items-center gap-6 bg-white rounded-2xl border border-cyan-200 hover:border-cyan-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-0.5"
           >
-            <div className="absolute inset-y-0 right-0 w-1/3 bg-[linear-gradient(135deg,rgba(6,182,212,0.12),rgba(0,183,175,0.06))]" />
-            <div className="relative w-14 h-14 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-100 transition-colors">
+            <div className="relative w-14 h-14 rounded-xl bg-white border border-cyan-100 flex items-center justify-center flex-shrink-0 transition-colors">
               <svg className="w-7 h-7 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5A2.5 2.5 0 015.5 5h7A2.5 2.5 0 0115 7.5v9a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 013 16.5v-9zM15 10l4.2-2.52A1.2 1.2 0 0121 8.51v6.98a1.2 1.2 0 01-1.8 1.03L15 14v-4z" />
               </svg>
@@ -59,7 +58,7 @@ export default function IndexPage() {
                 <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 group-hover:text-cyan-700 transition-colors">
                   SEIIM R&D
                 </h2>
-                <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 border border-cyan-100">
+                <span className="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-cyan-700 border border-cyan-100">
                   R&D
                 </span>
               </div>
