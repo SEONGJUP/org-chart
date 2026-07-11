@@ -1,0 +1,182 @@
+import Link from "next/link";
+import {
+  IconArrowLeft,
+  IconCamera,
+  IconCertificate,
+  IconClipboardText,
+  IconDeviceDesktopAnalytics,
+  IconFileCheck,
+  IconGavel,
+  IconRoute,
+  IconShieldCheck,
+  IconSparkles,
+} from "@tabler/icons-react";
+
+const inputs = [
+  { title: "관제화면", desc: "운영자가 보고 있는 모니터 화면을 직접 캡처", strength: 92 },
+  { title: "HDMI 캡처보드", desc: "DVR/NVR 출력 신호를 표준 영상 스트림으로 변환", strength: 88 },
+  { title: "웹캠", desc: "현장 모니터·작업 구역을 비접촉 방식으로 관찰", strength: 78 },
+  { title: "스트리밍", desc: "브라우저·RTSP·원격 회의형 화면 입력을 수집", strength: 84 },
+];
+
+const pipeline = [
+  { step: "01", title: "영상정보 획득", desc: "원본파일·제조사 API·VMS 접근 없이 화면 기반으로 입력 확보", icon: IconCamera },
+  { step: "02", title: "표준화", desc: "해상도, 프레임, 타임스탬프, 작업구역 좌표를 공통 포맷으로 정규화", icon: IconRoute },
+  { step: "03", title: "상황이벤트 추론", desc: "작업자, 장비, 위험구역, 보호구, 행동 패턴을 이벤트 단위로 추론", icon: IconSparkles },
+  { step: "04", title: "법적 정합성 검증", desc: "산안법·중처법·현장 기준에 맞춰 누락 의무와 증빙 요건을 대조", icon: IconGavel },
+  { step: "05", title: "문서자동화", desc: "점검일지, 개선조치, 교육·보고 문서를 감사 가능한 형태로 생성", icon: IconClipboardText },
+];
+
+const eventTypes = [
+  "보호구 미착용",
+  "위험구역 접근",
+  "고소작업 상태",
+  "장비·작업자 근접",
+  "화기작업 징후",
+  "통로 적치·낙하 위험",
+];
+
+const complianceChecks = [
+  { label: "위험요인 식별", value: "상황이벤트", status: "자동 매핑" },
+  { label: "개선조치 기록", value: "조치 항목", status: "증빙 연결" },
+  { label: "교육 필요성", value: "반복 이벤트", status: "대상 추천" },
+  { label: "보고서 정합성", value: "법정 항목", status: "누락 검증" },
+];
+
+export default function SeiimRndPage() {
+  return (
+    <main className="min-h-screen bg-[#f5f8f9] text-slate-950">
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-5 md:px-8">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008d86]">
+            <IconArrowLeft size={17} /> 목록으로
+          </Link>
+        </div>
+      </section>
+
+      <section className="bg-white">
+        <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-14 pt-6 md:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(440px,1fr)] lg:items-center">
+          <div>
+            <p className="inline-flex items-center gap-2 rounded-full bg-cyan-50 px-3 py-1.5 text-xs font-black text-cyan-700 ring-1 ring-cyan-100">
+              <IconShieldCheck size={15} /> SEIIM R&D ENGINE
+            </p>
+            <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
+              영상 원본 비의존형<br />
+              산업안전 상황이벤트 추론 엔진
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg font-semibold leading-8 text-slate-600">
+              영상 원본파일, CCTV 제조사 API 및 영상관리시스템에 직접 접근하지 못하는 환경에서도 관제화면, HDMI 캡처보드, 웹캠 및 스트리밍 등을 통해 영상정보를 획득 및 표준화합니다.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              {["원본 비의존", "화면 기반 획득", "이벤트 추론", "법적 정합성 검증", "문서자동화"].map((item) => (
+                <span key={item} className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-black text-slate-700">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 p-5 shadow-2xl shadow-cyan-950/10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-400 via-[#00b7af] to-emerald-300" />
+            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-black tracking-[0.18em] text-cyan-200">SCREEN CAPTURE LAYER</p>
+                  <h2 className="mt-1 text-xl font-black text-white">비접근 환경 영상 표준화</h2>
+                </div>
+                <IconDeviceDesktopAnalytics size={34} className="text-cyan-200" />
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {inputs.map((input) => (
+                  <div key={input.title} className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-black text-white">{input.title}</p>
+                      <span className="text-xs font-black text-cyan-200">{input.strength}%</span>
+                    </div>
+                    <p className="mt-2 min-h-10 text-xs font-semibold leading-5 text-slate-300">{input.desc}</p>
+                    <div className="mt-3 h-2 rounded-full bg-white/10">
+                      <div className="h-2 rounded-full bg-cyan-300" style={{ width: `${input.strength}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 py-12 md:px-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">ENGINE PIPELINE</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-950">획득부터 문서화까지 하나의 검증 흐름</h2>
+          </div>
+          <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-slate-500 ring-1 ring-slate-200">
+            API/VMS 직접 접근 불필요
+          </span>
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-5">
+          {pipeline.map((item) => {
+            const Icon = item.icon;
+            return (
+              <article key={item.step} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-400">{item.step}</span>
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan-50 text-cyan-700">
+                    <Icon size={21} />
+                  </span>
+                </div>
+                <h3 className="mt-5 text-lg font-black text-slate-950">{item.title}</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{item.desc}</p>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-7xl gap-5 px-5 pb-14 md:px-8 lg:grid-cols-[1fr_1fr]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">EVENT INFERENCE</p>
+              <h2 className="mt-1 text-xl font-black text-slate-950">산업안전 상황이벤트 분류</h2>
+            </div>
+            <IconCertificate size={30} className="text-[#00a099]" />
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
+            {eventTypes.map((event, index) => (
+              <div key={event} className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-100">
+                <span className="text-xs font-black text-slate-400">E{String(index + 1).padStart(2, "0")}</span>
+                <p className="mt-2 text-sm font-black leading-5 text-slate-800">{event}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">LEGAL ALIGNMENT</p>
+              <h2 className="mt-1 text-xl font-black text-slate-950">법적 정합성 검증형 문서자동화</h2>
+            </div>
+            <IconFileCheck size={30} className="text-[#00a099]" />
+          </div>
+          <div className="mt-5 space-y-3">
+            {complianceChecks.map((check) => (
+              <div key={check.label} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                <div>
+                  <p className="text-sm font-black text-slate-800">{check.label}</p>
+                  <p className="mt-0.5 text-xs font-bold text-slate-400">{check.value}</p>
+                </div>
+                <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-black text-[#008d86] ring-1 ring-teal-100">
+                  {check.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}

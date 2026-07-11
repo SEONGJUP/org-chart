@@ -45,6 +45,34 @@ export default function IndexPage() {
           </Link>
 
           <Link
+            href="/seiim-rnd"
+            className="group relative flex items-center gap-6 bg-white rounded-2xl border border-cyan-200 hover:border-cyan-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/10 hover:-translate-y-0.5 overflow-hidden"
+          >
+            <div className="absolute inset-y-0 right-0 w-1/3 bg-[linear-gradient(135deg,rgba(6,182,212,0.12),rgba(0,183,175,0.06))]" />
+            <div className="relative w-14 h-14 rounded-xl bg-cyan-50 border border-cyan-100 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-100 transition-colors">
+              <svg className="w-7 h-7 text-cyan-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 7.5A2.5 2.5 0 015.5 5h7A2.5 2.5 0 0115 7.5v9a2.5 2.5 0 01-2.5 2.5h-7A2.5 2.5 0 013 16.5v-9zM15 10l4.2-2.52A1.2 1.2 0 0121 8.51v6.98a1.2 1.2 0 01-1.8 1.03L15 14v-4z" />
+              </svg>
+            </div>
+            <div className="relative flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 group-hover:text-cyan-700 transition-colors">
+                  SEIIM R&D
+                </h2>
+                <span className="rounded-full bg-cyan-50 px-2.5 py-1 text-[11px] font-bold text-cyan-700 border border-cyan-100">
+                  R&D
+                </span>
+              </div>
+              <p className="mt-1 text-gray-500 text-[15px]">
+                영상 원본 비의존형 산업안전 상황이벤트 추론 및 법적 정합성 검증형 문서자동화 엔진
+              </p>
+            </div>
+            <svg className="relative w-6 h-6 text-gray-300 group-hover:text-cyan-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          <Link
             href="/half-year-inspection"
             className="group relative flex items-center gap-6 bg-white rounded-2xl border border-blue-200 hover:border-blue-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-0.5"
           >
