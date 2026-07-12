@@ -43,6 +43,27 @@ const complianceChecks = [
   { label: "보고서 정합성", value: "법정 항목", status: "누락 검증" },
 ];
 
+const researchFoundations = [
+  {
+    title: "객체탐지",
+    desc: "작업자, 보호구, 건설기계, 운반장비, 안전시설, 위험구역을 현장 객체로 식별",
+    tags: ["작업자", "보호구", "장비", "위험구역"],
+  },
+  {
+    title: "행동 인식",
+    desc: "보호구 미착용, 위험구역 진입, 장비 근접, 추락·충돌 가능 행동을 감지",
+    tags: ["미착용", "진입", "근접", "추락·충돌"],
+  },
+];
+
+const researchMethods = [
+  { title: "관계 분석", desc: "작업자–장비, 작업자–위험구역, 장비–시설물 간 거리·방향·접근 관계 분석" },
+  { title: "시계열 이벤트", desc: "위험상황의 발생, 지속, 반복, 해소 상태를 시간 흐름으로 구분" },
+  { title: "상황 맥락 분류", desc: "장소, 공종, 작업단계, 주변환경을 고려해 이벤트 의미를 보정" },
+  { title: "안전이벤트 변환", desc: "객체·행동 분석결과를 위험원인, 예상사고, 권고조치로 구조화" },
+  { title: "도메인 적응", desc: "카메라 각도, 조명, 현장환경 변화에 대응하는 적응기술 개발" },
+];
+
 export default function SeiimRndPage() {
   return (
     <main className="min-h-screen bg-white text-slate-950">
@@ -174,6 +195,62 @@ export default function SeiimRndPage() {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 md:px-8">
+        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <p className="text-xs font-black tracking-[0.14em] text-[#007F80]">R&D METHOD</p>
+            <h2 className="mt-1 text-2xl font-black text-slate-950">객체·행동 인식 기반 안전이벤트 추론 방법</h2>
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-slate-500">
+              객체탐지와 행동 인식을 기반 입력으로 삼아, 관계·시간·맥락 분석을 거쳐 법적 문서화 가능한 안전이벤트로 변환합니다.
+            </p>
+          </div>
+          <span className="rounded-full bg-[#008C8C] px-4 py-2 text-sm font-black text-white">
+            핵심 연구개발 방법
+          </span>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-[0.62fr_1fr]">
+          <div className="grid gap-3">
+            {researchFoundations.map((foundation) => (
+              <article key={foundation.title} className="rounded-2xl border border-[#008C8C]/20 bg-[#008C8C]/5 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-lg font-black text-slate-950">{foundation.title}</h3>
+                  <span className="rounded-full bg-[#008C8C] px-3 py-1 text-xs font-black text-white">기반</span>
+                </div>
+                <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{foundation.desc}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {foundation.tags.map((tag) => (
+                    <span key={tag} className="rounded-full border border-[#008C8C]/20 bg-white px-3 py-1 text-xs font-black text-[#007F80]">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="grid gap-3 md:grid-cols-5">
+              {researchMethods.map((method, index) => (
+                <article key={method.title} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#008C8C] text-xs font-black text-white">
+                    {index + 1}
+                  </span>
+                  <h3 className="mt-4 text-sm font-black text-slate-950">{method.title}</h3>
+                  <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{method.desc}</p>
+                </article>
+              ))}
+            </div>
+            <div className="mt-4 rounded-xl border border-[#008C8C]/20 bg-[#008C8C]/5 px-4 py-3">
+              <p className="text-sm font-black text-[#007F80]">출력 구조</p>
+              <p className="mt-1 text-sm font-semibold text-slate-600">
+                객체 + 행동 + 관계 + 시간 + 맥락 → 위험원인·예상사고·권고조치가 포함된 안전이벤트
+              </p>
+            </div>
           </div>
         </div>
       </section>
