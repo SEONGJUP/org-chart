@@ -213,8 +213,8 @@ export default function SeiimRndPage() {
           </span>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[0.62fr_1fr]">
-          <div className="grid gap-3">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="grid gap-4 md:grid-cols-2">
             {researchFoundations.map((foundation) => (
               <article key={foundation.title} className="rounded-2xl border border-[#008C8C]/20 bg-[#008C8C]/5 p-5">
                 <div className="flex items-center justify-between gap-3">
@@ -233,24 +233,35 @@ export default function SeiimRndPage() {
             ))}
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="grid gap-3 md:grid-cols-5">
-              {researchMethods.map((method, index) => (
-                <article key={method.title} className="rounded-xl border border-slate-200 bg-white p-4">
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#008C8C] text-xs font-black text-white">
-                    {index + 1}
+          <div className="relative my-6 flex items-center justify-center">
+            <div className="absolute left-0 right-0 top-1/2 h-px bg-[#008C8C]/20" />
+            <div className="relative rounded-full border border-[#008C8C]/20 bg-white px-4 py-2 text-xs font-black text-[#007F80] shadow-sm">
+              객체·행동 분석 결과를 안전이벤트 추론 단계로 전환
+            </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-5">
+            {researchMethods.map((method, index) => (
+              <article key={method.title} className="relative rounded-xl border border-slate-200 bg-white p-4">
+                {index < researchMethods.length - 1 && (
+                  <span className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full bg-[#008C8C] text-xs font-black text-white md:flex">
+                    →
                   </span>
-                  <h3 className="mt-4 text-sm font-black text-slate-950">{method.title}</h3>
-                  <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{method.desc}</p>
-                </article>
-              ))}
-            </div>
-            <div className="mt-4 rounded-xl border border-[#008C8C]/20 bg-[#008C8C]/5 px-4 py-3">
-              <p className="text-sm font-black text-[#007F80]">출력 구조</p>
-              <p className="mt-1 text-sm font-semibold text-slate-600">
-                객체 + 행동 + 관계 + 시간 + 맥락 → 위험원인·예상사고·권고조치가 포함된 안전이벤트
-              </p>
-            </div>
+                )}
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-[#008C8C] text-xs font-black text-white">
+                  {index + 1}
+                </span>
+                <h3 className="mt-4 text-sm font-black text-slate-950">{method.title}</h3>
+                <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{method.desc}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-xl border border-[#008C8C]/20 bg-[#008C8C]/5 px-4 py-3">
+            <p className="text-sm font-black text-[#007F80]">출력 구조</p>
+            <p className="mt-1 text-sm font-semibold text-slate-600">
+              객체 + 행동 + 관계 + 시간 + 맥락 → 위험원인·예상사고·권고조치가 포함된 안전이벤트
+            </p>
           </div>
         </div>
       </section>
