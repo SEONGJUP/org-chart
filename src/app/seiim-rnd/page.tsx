@@ -48,7 +48,7 @@ export default function SeiimRndPage() {
     <main className="min-h-screen bg-white text-slate-950">
       <section className="border-b border-slate-200 bg-white">
         <div className="mx-auto max-w-7xl px-5 py-5 md:px-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008d86]">
+          <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-[#008C8C]">
             <IconArrowLeft size={17} /> 목록으로
           </Link>
         </div>
@@ -57,7 +57,7 @@ export default function SeiimRndPage() {
       <section className="bg-white">
         <div className="mx-auto grid max-w-7xl gap-10 px-5 pb-14 pt-6 md:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(440px,1fr)] lg:items-center">
           <div>
-            <p className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1.5 text-xs font-black text-cyan-700 ring-1 ring-cyan-100">
+            <p className="inline-flex items-center gap-2 rounded-full bg-[#008C8C] px-3 py-1.5 text-xs font-black text-white ring-1 ring-[#008C8C]">
               <IconShieldCheck size={15} /> SEIIM R&D ENGINE
             </p>
             <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-slate-950 md:text-5xl">
@@ -69,33 +69,33 @@ export default function SeiimRndPage() {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               {["원본 비의존", "화면 기반 획득", "이벤트 추론", "법적 정합성 검증", "문서자동화"].map((item) => (
-                <span key={item} className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700">
+                <span key={item} className="rounded-full border border-[#008C8C]/20 bg-[#008C8C]/8 px-4 py-2 text-sm font-black text-[#007F80]">
                   {item}
                 </span>
               ))}
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl shadow-cyan-950/10">
-            <div className="absolute inset-x-0 top-0 h-1 bg-white border-b border-cyan-200" />
-            <div className="rounded-xl border border-slate-200 bg-white p-4">
+          <div className="relative overflow-hidden rounded-2xl border border-[#008C8C]/25 bg-white p-5 shadow-2xl shadow-[#008C8C]/10">
+            <div className="absolute inset-x-0 top-0 h-1 bg-[#008C8C]" />
+            <div className="rounded-xl border border-[#008C8C]/20 bg-[#008C8C]/5 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-black tracking-[0.18em] text-cyan-700">SCREEN CAPTURE LAYER</p>
+                  <p className="text-xs font-black tracking-[0.18em] text-[#007F80]">SCREEN CAPTURE LAYER</p>
                   <h2 className="mt-1 text-xl font-black text-slate-950">비접근 환경 영상 표준화</h2>
                 </div>
-                <IconDeviceDesktopAnalytics size={34} className="text-cyan-700" />
+                <IconDeviceDesktopAnalytics size={34} className="text-[#008C8C]" />
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {inputs.map((input) => (
-                  <div key={input.title} className="rounded-xl border border-slate-200 bg-white p-4">
+                  <div key={input.title} className="rounded-xl border border-[#008C8C]/15 bg-white p-4 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-black text-slate-950">{input.title}</p>
-                      <span className="text-xs font-black text-cyan-700">{input.strength}%</span>
+                      <span className="rounded-full bg-[#008C8C] px-2 py-0.5 text-xs font-black text-white">{input.strength}%</span>
                     </div>
                     <p className="mt-2 min-h-10 text-xs font-semibold leading-5 text-slate-500">{input.desc}</p>
-                    <div className="mt-3 h-2 rounded-full bg-white ring-1 ring-slate-200">
-                      <div className="h-2 rounded-full bg-white border-r-2 border-cyan-500" style={{ width: `${input.strength}%` }} />
+                    <div className="mt-3 h-2 rounded-full bg-slate-100">
+                      <div className="h-2 rounded-full bg-[#008C8C]" style={{ width: `${input.strength}%` }} />
                     </div>
                   </div>
                 ))}
@@ -108,10 +108,10 @@ export default function SeiimRndPage() {
       <section className="mx-auto max-w-7xl px-5 py-12 md:px-8">
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">ENGINE PIPELINE</p>
+            <p className="text-xs font-black tracking-[0.14em] text-[#007F80]">ENGINE PIPELINE</p>
             <h2 className="mt-1 text-2xl font-black text-slate-950">획득부터 문서화까지 하나의 검증 흐름</h2>
           </div>
-          <span className="rounded-full bg-white px-4 py-2 text-sm font-black text-slate-500 ring-1 ring-slate-200">
+          <span className="rounded-full bg-[#008C8C]/8 px-4 py-2 text-sm font-black text-[#007F80] ring-1 ring-[#008C8C]/20">
             API/VMS 직접 접근 불필요
           </span>
         </div>
@@ -122,8 +122,8 @@ export default function SeiimRndPage() {
             return (
               <article key={item.step} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-slate-400">{item.step}</span>
-                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-cyan-700 ring-1 ring-cyan-100">
+                  <span className="rounded-full bg-[#008C8C]/8 px-2 py-1 text-xs font-black text-[#007F80]">{item.step}</span>
+                  <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#008C8C] text-white ring-1 ring-[#008C8C]">
                     <Icon size={21} />
                   </span>
                 </div>
@@ -139,15 +139,15 @@ export default function SeiimRndPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">EVENT INFERENCE</p>
+              <p className="text-xs font-black tracking-[0.14em] text-[#007F80]">EVENT INFERENCE</p>
               <h2 className="mt-1 text-xl font-black text-slate-950">산업안전 상황이벤트 분류</h2>
             </div>
-            <IconCertificate size={30} className="text-[#00a099]" />
+            <IconCertificate size={30} className="text-[#008C8C]" />
           </div>
           <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3">
             {eventTypes.map((event, index) => (
-              <div key={event} className="rounded-xl bg-white p-4 ring-1 ring-slate-100">
-                <span className="text-xs font-black text-slate-400">E{String(index + 1).padStart(2, "0")}</span>
+              <div key={event} className="rounded-xl bg-[#008C8C]/5 p-4 ring-1 ring-[#008C8C]/15">
+                <span className="text-xs font-black text-[#007F80]">E{String(index + 1).padStart(2, "0")}</span>
                 <p className="mt-2 text-sm font-black leading-5 text-slate-800">{event}</p>
               </div>
             ))}
@@ -157,19 +157,19 @@ export default function SeiimRndPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-black tracking-[0.14em] text-[#00a099]">LEGAL ALIGNMENT</p>
+              <p className="text-xs font-black tracking-[0.14em] text-[#007F80]">LEGAL ALIGNMENT</p>
               <h2 className="mt-1 text-xl font-black text-slate-950">법적 정합성 검증형 문서자동화</h2>
             </div>
-            <IconFileCheck size={30} className="text-[#00a099]" />
+            <IconFileCheck size={30} className="text-[#008C8C]" />
           </div>
           <div className="mt-5 space-y-3">
             {complianceChecks.map((check) => (
-              <div key={check.label} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3">
+              <div key={check.label} className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border border-[#008C8C]/15 bg-[#008C8C]/5 px-4 py-3">
                 <div>
                   <p className="text-sm font-black text-slate-800">{check.label}</p>
                   <p className="mt-0.5 text-xs font-bold text-slate-400">{check.value}</p>
                 </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#008d86] ring-1 ring-teal-100">
+                <span className="rounded-full bg-[#008C8C] px-3 py-1 text-xs font-black text-white ring-1 ring-[#008C8C]">
                   {check.status}
                 </span>
               </div>
