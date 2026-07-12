@@ -240,7 +240,7 @@ export default function SeiimRndPage() {
 
           <div className="relative my-7 flex items-center justify-center">
             <div className="absolute left-0 right-0 top-1/2 h-px" style={{ backgroundColor: BRAND_BORDER }} />
-            <div className="relative rounded-2xl border bg-white px-6 py-4 text-center text-lg font-black shadow-sm md:text-xl" style={{ borderColor: BRAND_BORDER, color: BRAND_SUB }}>
+            <div className="relative rounded-2xl border bg-white px-6 py-4 text-center text-base font-black shadow-sm md:text-lg" style={{ borderColor: BRAND_BORDER, color: BRAND_SUB }}>
               객체·행동 분석 결과를 안전이벤트 추론 단계로 전환
             </div>
           </div>
