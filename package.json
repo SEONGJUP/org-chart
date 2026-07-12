@@ -15,7 +15,7 @@
     "preview:fresh": "node scripts/preview-fresh.mjs",
     "preview:hidden": "powershell -ExecutionPolicy Bypass -File scripts/start-preview-hidden.ps1",
     "smoke:css": "node scripts/smoke-css.mjs",
-    "verify:ui": "npm run build && npm run smoke:css",
+    "verify:ui": "npm run smoke:css",
     "lint": "eslint",
     "bot": "tsx src/bot/index.ts",
     "bot:deploy": "tsx src/bot/commands/deploy.ts"

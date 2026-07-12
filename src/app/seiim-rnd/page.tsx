@@ -245,32 +245,25 @@ export default function SeiimRndPage() {
             </div>
           </div>
 
-          <div className="mx-auto max-w-4xl">
+          <div className="grid gap-3 lg:grid-cols-4">
             {researchMethods.map((method, index) => (
-              <div key={method.title} className="relative">
-                <article className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[72px_1fr] md:items-center">
-                  <div className="flex items-center gap-3 md:block md:text-center">
-                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-black text-white md:mx-auto" style={{ backgroundColor: BRAND }}>
-                      {index + 1}
-                    </span>
-                    <span className="text-xs font-black md:mt-2 md:block" style={{ color: BRAND_SUB }}>
-                      STEP
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-950">{method.title}</h3>
-                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">{method.desc}</p>
-                  </div>
-                </article>
+              <article key={method.title} className="relative rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                 {index < researchMethods.length - 1 && (
-                  <div className="flex h-9 items-center justify-center" aria-hidden="true">
-                    <div className="h-full w-px" style={{ backgroundColor: BRAND_BORDER }} />
-                    <span className="absolute grid h-7 w-7 place-items-center rounded-full text-sm font-black text-white" style={{ backgroundColor: BRAND }}>
-                      ↓
-                    </span>
-                  </div>
+                  <span className="absolute -right-3 top-8 z-10 hidden h-7 w-7 place-items-center rounded-full text-sm font-black text-white lg:grid" style={{ backgroundColor: BRAND }}>
+                    →
+                  </span>
                 )}
-              </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-sm font-black text-white" style={{ backgroundColor: BRAND }}>
+                    {index + 1}
+                  </span>
+                  <span className="text-xs font-black" style={{ color: BRAND_SUB }}>
+                    STEP
+                  </span>
+                </div>
+                <h3 className="mt-4 text-base font-black text-slate-950">{method.title}</h3>
+                <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{method.desc}</p>
+              </article>
             ))}
           </div>
 
