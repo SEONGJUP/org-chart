@@ -67,7 +67,6 @@ const researchMethods = [
   { title: "시계열 이벤트", desc: "위험상황의 발생, 지속, 반복, 해소 상태를 시간 흐름으로 구분" },
   { title: "상황 맥락 분류", desc: "장소, 공종, 작업단계, 주변환경을 고려해 이벤트 의미를 보정" },
   { title: "안전이벤트 변환", desc: "객체·행동 분석결과를 위험원인, 예상사고, 권고조치로 구조화" },
-  { title: "도메인 적응", desc: "카메라 각도, 조명, 현장환경 변화에 대응하는 적응기술 개발" },
 ];
 
 export default function SeiimRndPage() {
@@ -239,27 +238,39 @@ export default function SeiimRndPage() {
             ))}
           </div>
 
-          <div className="relative my-6 flex items-center justify-center">
+          <div className="relative my-7 flex items-center justify-center">
             <div className="absolute left-0 right-0 top-1/2 h-px" style={{ backgroundColor: BRAND_BORDER }} />
-            <div className="relative rounded-full border bg-white px-4 py-2 text-xs font-black shadow-sm" style={{ borderColor: BRAND_BORDER, color: BRAND_SUB }}>
+            <div className="relative rounded-2xl border bg-white px-6 py-4 text-center text-lg font-black shadow-sm md:text-xl" style={{ borderColor: BRAND_BORDER, color: BRAND_SUB }}>
               객체·행동 분석 결과를 안전이벤트 추론 단계로 전환
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-5">
+          <div className="mx-auto max-w-4xl">
             {researchMethods.map((method, index) => (
-              <article key={method.title} className="relative rounded-xl border border-slate-200 bg-white p-4">
+              <div key={method.title} className="relative">
+                <article className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[72px_1fr] md:items-center">
+                  <div className="flex items-center gap-3 md:block md:text-center">
+                    <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-base font-black text-white md:mx-auto" style={{ backgroundColor: BRAND }}>
+                      {index + 1}
+                    </span>
+                    <span className="text-xs font-black md:mt-2 md:block" style={{ color: BRAND_SUB }}>
+                      STEP
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-slate-950">{method.title}</h3>
+                    <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">{method.desc}</p>
+                  </div>
+                </article>
                 {index < researchMethods.length - 1 && (
-                  <span className="absolute -right-3 top-7 z-10 hidden h-6 w-6 items-center justify-center rounded-full text-xs font-black text-white md:flex" style={{ backgroundColor: BRAND }}>
-                    →
-                  </span>
+                  <div className="flex h-9 items-center justify-center" aria-hidden="true">
+                    <div className="h-full w-px" style={{ backgroundColor: BRAND_BORDER }} />
+                    <span className="absolute grid h-7 w-7 place-items-center rounded-full text-sm font-black text-white" style={{ backgroundColor: BRAND }}>
+                      ↓
+                    </span>
+                  </div>
                 )}
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-xs font-black text-white" style={{ backgroundColor: BRAND }}>
-                  {index + 1}
-                </span>
-                <h3 className="mt-4 text-sm font-black text-slate-950">{method.title}</h3>
-                <p className="mt-2 text-xs font-semibold leading-5 text-slate-500">{method.desc}</p>
-              </article>
+              </div>
             ))}
           </div>
 
