@@ -86,6 +86,7 @@ export default function FeatureDetailPage() {
 
   const [stage, setStage] = useState<Stage>("input");
   const [previewUrl, setPreviewUrl] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; type: string } | null>(null);
   const [textInput, setTextInput] = useState("");
   const [summary, setSummary] = useState(feature ? sampleSummary[feature.kind] : "");
   const [confirmed, setConfirmed] = useState(false);
@@ -100,7 +101,9 @@ export default function FeatureDetailPage() {
   const handleUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(URL.createObjectURL(file));
+    setUploadedFile({ name: file.name, type: file.type });
   };
 
   const runAnalysis = () => {
@@ -165,6 +168,7 @@ export default function FeatureDetailPage() {
               feature={feature}
               stage={stage}
               previewUrl={previewUrl}
+              uploadedFile={uploadedFile}
               textInput={textInput}
               summary={summary}
               confirmed={confirmed}
@@ -223,6 +227,7 @@ function WorkflowPanel({
   feature,
   stage,
   previewUrl,
+  uploadedFile,
   textInput,
   summary,
   confirmed,
@@ -237,6 +242,7 @@ function WorkflowPanel({
   feature: Feature;
   stage: Stage;
   previewUrl: string;
+  uploadedFile: { name: string; type: string } | null;
   textInput: string;
   summary: string;
   confirmed: boolean;
@@ -254,7 +260,7 @@ function WorkflowPanel({
         <h2 className="text-xl font-black text-slate-950">{getInputTitle(feature.kind)}</h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{getInputDesc(feature.kind)}</p>
         <div className="mt-5 grid gap-4">
-          <UploadBox feature={feature} previewUrl={previewUrl} onUpload={onUpload} />
+          <UploadBox feature={feature} previewUrl={previewUrl} uploadedFile={uploadedFile} onUpload={onUpload} />
           {feature.kind !== "msds" && (
             <textarea
               value={textInput}
@@ -298,15 +304,17 @@ function WorkflowPanel({
   );
 }
 
-function UploadBox({ feature, previewUrl, onUpload }: { feature: Feature; previewUrl: string; onUpload: (event: ChangeEvent<HTMLInputElement>) => void }) {
+function UploadBox({ feature, previewUrl, uploadedFile, onUpload }: { feature: Feature; previewUrl: string; uploadedFile: { name: string; type: string } | null; onUpload: (event: ChangeEvent<HTMLInputElement>) => void }) {
   const acceptsImage = feature.kind !== "msds";
+  const accept = acceptsImage ? "image/*,.heic,.heif" : ".pdf,.doc,.docx,.png,.jpg,.jpeg,.heic,.heif,image/*";
+  const isImagePreview = previewUrl && (acceptsImage || uploadedFile?.type.startsWith("image/"));
   const label = feature.kind === "msds" ? "MSDS 물질자료 업로드" : feature.kind === "aed" ? "AED 사진 촬영 또는 업로드" : "사진촬영 또는 사진업로드";
 
   return (
     <label className="block cursor-pointer">
-      <input type="file" accept={acceptsImage ? "image/*" : ".pdf,.doc,.docx,.png,.jpg,.jpeg"} capture={acceptsImage ? "environment" : undefined} onChange={onUpload} className="sr-only" />
+      <input type="file" accept={accept} onChange={onUpload} className="sr-only" />
       <div className="group grid min-h-[260px] place-items-center rounded-3xl border-2 border-dashed border-teal-200 bg-teal-50/50 p-5 text-center transition hover:border-teal-400 hover:bg-white hover:shadow-lg hover:shadow-teal-900/5">
-        {previewUrl && acceptsImage ? (
+        {isImagePreview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt="업로드 미리보기" className="max-h-[260px] w-full rounded-xl object-cover" />
         ) : (
@@ -316,9 +324,19 @@ function UploadBox({ feature, previewUrl, onUpload }: { feature: Feature; previe
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
               {feature.kind === "msds" ? "PDF, 이미지, 문서 파일을 선택해 분석 흐름을 시작합니다." : "모바일에서는 카메라 촬영 또는 갤러리 선택이 가능합니다."}
             </p>
+            {uploadedFile && (
+              <p className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm font-black text-teal-700 ring-1 ring-teal-100">
+                첨부됨: {uploadedFile.name}
+              </p>
+            )}
           </div>
         )}
       </div>
+      {isImagePreview && uploadedFile && (
+        <p className="mt-3 rounded-2xl bg-white px-4 py-3 text-sm font-black text-teal-700 ring-1 ring-teal-100">
+          첨부됨: {uploadedFile.name}
+        </p>
+      )}
     </label>
   );
 }
