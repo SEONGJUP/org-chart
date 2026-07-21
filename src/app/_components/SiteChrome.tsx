@@ -5,17 +5,17 @@ import { usePathname } from "next/navigation";
 import MainFooter from "./MainFooter";
 import MainHeader from "./MainHeader";
 
-const chromeHiddenPaths = new Set(["/org-chart", "/half-year-inspection", "/site-performance"]);
+const chromeVisiblePaths = new Set(["/homepage"]);
 
 export default function SiteChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const hideChrome = chromeHiddenPaths.has(pathname);
+  const showChrome = chromeVisiblePaths.has(pathname);
 
   return (
     <>
-      {!hideChrome && <MainHeader />}
+      {showChrome && <MainHeader />}
       {children}
-      {!hideChrome && <MainFooter />}
+      {showChrome && <MainFooter />}
     </>
   );
 }
