@@ -43,6 +43,7 @@ export default function FeatureDetailPage() {
         desc: "추후 연결할 AI 기능의 준비 화면입니다.",
         icon: IconShieldCheck,
         tone: "bg-slate-50 text-slate-700 border-slate-200",
+        accent: "#475569",
         kind: "custom" as const,
       };
     }
@@ -77,9 +78,9 @@ export default function FeatureDetailPage() {
 
   return (
     <main className="min-h-screen bg-[#f6fbfb] text-slate-950">
-      <section className="border-b border-teal-100 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-5 md:px-8">
-          <Link href="/svc-open-innovation/demo" className="inline-flex items-center gap-2 text-sm font-black" style={{ color: BRAND }}>
+      <section className="border-b border-teal-100 bg-white/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4 md:px-8">
+          <Link href="/svc-open-innovation/demo" className="inline-flex h-10 items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 text-sm font-black transition hover:bg-white" style={{ color: BRAND }}>
             <IconArrowLeft size={18} /> 기능 목록
           </Link>
           <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-black text-teal-700 ring-1 ring-teal-100">
@@ -89,31 +90,35 @@ export default function FeatureDetailPage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-8 md:px-8">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
+        <div className="svc-animate-up overflow-hidden rounded-3xl border border-teal-100 bg-white shadow-xl shadow-teal-900/5">
+          <div className="h-2" style={{ background: `linear-gradient(90deg, ${feature.accent}, ${BRAND})` }} />
+          <div className="grid gap-5 p-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:p-7">
+            <div className="flex min-w-0 items-start gap-4">
               <FeatureThumb feature={feature} compact />
-              <div>
+              <div className="min-w-0">
                 <p className="text-xs font-black tracking-[0.16em] text-teal-700">ACTIVE FUNCTION</p>
                 <h1 className="mt-1 text-2xl font-black text-slate-950 md:text-3xl">{feature.title}</h1>
                 <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">{feature.desc}</p>
               </div>
             </div>
             {feature.kind !== "chatbot" && (
-              <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-xl border border-teal-200 bg-white px-4 py-3 text-sm font-black text-teal-700 shadow-sm">
+              <button onClick={() => window.print()} className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-teal-200 bg-white px-5 text-sm font-black text-teal-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-teal-50">
                 <IconPrinter size={17} /> 인쇄
               </button>
             )}
           </div>
 
           {feature.kind !== "chatbot" && (
-            <div className="mt-6 grid grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-px border-t border-slate-100 bg-slate-100">
               {stageLabels.map((item, index) => {
                 const currentIndex = stageLabels.indexOf(stage);
                 const isDone = index <= currentIndex;
                 return (
-                  <div key={item} className={`rounded-xl px-2 py-3 text-center text-xs font-black ${isDone ? "bg-teal-600 text-white" : "bg-slate-100 text-slate-400"}`}>
-                    {getStageTitle(item)}
+                  <div key={item} className={`px-2 py-4 text-center text-xs font-black transition-all duration-500 ${isDone ? "bg-teal-600 text-white" : "bg-white text-slate-400"}`}>
+                    <span className={`mx-auto mb-1 grid h-6 w-6 place-items-center rounded-full text-[11px] ${isDone ? "svc-animate-pulse bg-white text-teal-700" : "bg-slate-100 text-slate-400"}`}>
+                      {index + 1}
+                    </span>
+                    <span>{getStageTitle(item)}</span>
                   </div>
                 );
               })}
@@ -121,7 +126,7 @@ export default function FeatureDetailPage() {
           )}
         </div>
 
-        <div className="mt-5">
+        <div className="mt-6">
           {feature.kind === "chatbot" ? (
             <ChatbotPreview />
           ) : (
@@ -178,7 +183,7 @@ function WorkflowPanel({
 }) {
   return (
     <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="svc-animate-slide rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <h2 className="text-xl font-black text-slate-950">{getInputTitle(feature.kind)}</h2>
         <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">{getInputDesc(feature.kind)}</p>
         <div className="mt-5 grid gap-4">
@@ -188,17 +193,17 @@ function WorkflowPanel({
               value={textInput}
               onChange={(event) => onTextChange(event.target.value)}
               placeholder={getPlaceholder(feature.kind)}
-              className="min-h-32 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold leading-6 outline-none transition focus:border-teal-400 focus:bg-white"
+              className="min-h-32 w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold leading-6 outline-none transition focus:border-teal-400 focus:bg-white focus:shadow-lg focus:shadow-teal-900/5"
             />
           )}
         </div>
-        <button onClick={onAnalyze} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black text-white shadow-lg shadow-teal-700/15" style={{ backgroundColor: BRAND }}>
+        <button onClick={onAnalyze} className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-black text-white shadow-lg shadow-teal-700/15 transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-teal-700/20" style={{ backgroundColor: BRAND }}>
           <IconBrain size={18} /> 분석 실행
         </button>
       </div>
 
       <div className="grid gap-5">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="svc-animate-up svc-delay-2 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
           <p className="text-xs font-black tracking-[0.16em] text-teal-700">AI SUMMARY</p>
           <h2 className="mt-1 text-xl font-black text-slate-950">핵심내용 요약</h2>
           {stage === "editing" ? (
@@ -209,13 +214,13 @@ function WorkflowPanel({
             </p>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
-            <button onClick={onEdit} disabled={stage === "input"} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 disabled:cursor-not-allowed disabled:opacity-40">
+            <button onClick={onEdit} disabled={stage === "input"} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
               수정
             </button>
-            <button onClick={onConfirm} disabled={stage === "input"} className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40">
+            <button onClick={onConfirm} disabled={stage === "input"} className="rounded-xl bg-slate-950 px-4 py-2 text-sm font-black text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40">
               컨펌
             </button>
-            <button onClick={onGenerate} disabled={!confirmed} className="rounded-xl px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: BRAND }}>
+            <button onClick={onGenerate} disabled={!confirmed} className="rounded-xl px-4 py-2 text-sm font-black text-white transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-40" style={{ backgroundColor: BRAND }}>
               결과 생성
             </button>
           </div>
@@ -233,13 +238,13 @@ function UploadBox({ feature, previewUrl, onUpload }: { feature: Feature; previe
   return (
     <label className="block cursor-pointer">
       <input type="file" accept={acceptsImage ? "image/*" : ".pdf,.doc,.docx,.png,.jpg,.jpeg"} capture={acceptsImage ? "environment" : undefined} onChange={onUpload} className="sr-only" />
-      <div className="grid min-h-[240px] place-items-center rounded-2xl border-2 border-dashed border-teal-200 bg-teal-50/50 p-5 text-center">
+      <div className="group grid min-h-[260px] place-items-center rounded-3xl border-2 border-dashed border-teal-200 bg-teal-50/50 p-5 text-center transition hover:border-teal-400 hover:bg-white hover:shadow-lg hover:shadow-teal-900/5">
         {previewUrl && acceptsImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={previewUrl} alt="업로드 미리보기" className="max-h-[260px] w-full rounded-xl object-cover" />
         ) : (
           <div>
-            {feature.kind === "msds" ? <IconUpload className="mx-auto text-teal-700" size={42} /> : <IconPhotoUp className="mx-auto text-teal-700" size={42} />}
+            {feature.kind === "msds" ? <IconUpload className="mx-auto text-teal-700 transition group-hover:scale-110" size={42} /> : <IconPhotoUp className="mx-auto text-teal-700 transition group-hover:scale-110" size={42} />}
             <p className="mt-4 text-lg font-black text-slate-950">{label}</p>
             <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
               {feature.kind === "msds" ? "PDF, 이미지, 문서 파일을 선택해 분석 흐름을 시작합니다." : "모바일에서는 카메라 촬영 또는 갤러리 선택이 가능합니다."}
@@ -254,7 +259,7 @@ function UploadBox({ feature, previewUrl, onUpload }: { feature: Feature; previe
 function OutputPanel({ feature, stage, summary }: { feature: Feature; stage: Stage; summary: string }) {
   if (stage !== "output") {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div className="svc-animate-scale rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <p className="text-xs font-black tracking-[0.16em] text-slate-400">RESULT</p>
         <h2 className="mt-1 text-xl font-black text-slate-950">결과 미리보기</h2>
         <p className="mt-4 rounded-2xl bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-500">
@@ -271,7 +276,7 @@ function OutputPanel({ feature, stage, summary }: { feature: Feature; stage: Sta
   if (feature.kind === "ergonomic") return <ErgonomicOutput summary={summary} />;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="svc-animate-scale rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
       <h2 className="text-xl font-black text-slate-950">추가 기능 결과</h2>
       <p className="mt-3 text-sm font-semibold leading-6 text-slate-600">{summary}</p>
     </div>
@@ -280,7 +285,7 @@ function OutputPanel({ feature, stage, summary }: { feature: Feature; stage: Sta
 
 function MsdsOutput({ summary }: { summary: string }) {
   return (
-    <div className="rounded-2xl border-4 border-slate-950 bg-white p-5 shadow-sm">
+    <div className="svc-animate-scale rounded-3xl border-4 border-slate-950 bg-white p-5 shadow-sm md:p-6">
       <div className="flex items-start justify-between gap-4 border-b-4 border-slate-950 pb-4">
         <div>
           <p className="text-sm font-black tracking-[0.2em] text-red-600">MSDS WARNING LABEL</p>
@@ -299,7 +304,7 @@ function MsdsOutput({ summary }: { summary: string }) {
 
 function LawOutput({ summary }: { summary: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="svc-animate-scale rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
       <h2 className="flex items-center gap-2 text-xl font-black text-slate-950"><IconSearch size={22} className="text-blue-700" /> 법령 검색 및 링크</h2>
       <InfoBlock title="분석 요약" text={summary} />
       <div className="mt-4 grid gap-3">
@@ -340,7 +345,7 @@ function ErgonomicOutput({ summary }: { summary: string }) {
 
 function ChatbotPreview() {
   return (
-    <div className="rounded-3xl border border-teal-100 bg-white p-5 shadow-xl shadow-teal-900/5">
+    <div className="svc-animate-up rounded-3xl border border-teal-100 bg-white p-5 shadow-xl shadow-teal-900/5 md:p-6">
       <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div>
           <p className="text-xs font-black tracking-[0.16em] text-teal-700">CHATBOT PREVIEW</p>
@@ -349,7 +354,7 @@ function ChatbotPreview() {
             현재 MVP에서는 챗봇 UI 이미지만 보여줍니다. 추후에는 SafeBuddy RAG, 법령 검색, MSDS 정보 조회, 교육자료 생성 기능과 연결할 수 있습니다.
           </p>
         </div>
-        <div className="rounded-[28px] bg-slate-950 p-3">
+        <div className="svc-animate-scale svc-delay-2 rounded-[28px] bg-slate-950 p-3">
           <div className="overflow-hidden rounded-[22px] bg-white">
             <div className="flex items-center gap-3 bg-teal-600 px-5 py-4 text-white">
               <IconMessageChatbot size={24} />
@@ -378,7 +383,7 @@ function ChatbotPreview() {
 
 function ReportShell({ title, icon: Icon, children }: { title: string; icon: ComponentType<{ size?: number; className?: string }>; children: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="svc-animate-scale rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
       <h2 className="flex items-center gap-2 text-xl font-black text-slate-950">
         <Icon size={22} className="text-teal-700" /> {title}
       </h2>

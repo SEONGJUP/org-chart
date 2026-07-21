@@ -19,6 +19,7 @@ export type Feature = {
   desc: string;
   icon: typeof IconSparkles;
   tone: string;
+  accent: string;
   kind: FeatureKind;
 };
 
@@ -29,6 +30,7 @@ export const baseFeatures: Feature[] = [
     desc: "MSDS 물질자료 업로드 후 분석, 요약, 수정, 컨펌, 경고표지 인쇄",
     icon: IconFileAlert,
     tone: "bg-red-50 text-red-700 border-red-100",
+    accent: "#dc2626",
     kind: "msds",
   },
   {
@@ -37,6 +39,7 @@ export const baseFeatures: Feature[] = [
     desc: "사진 또는 텍스트로 현장 상황을 입력하고 관련 법령 링크 검색",
     icon: IconGavel,
     tone: "bg-blue-50 text-blue-700 border-blue-100",
+    accent: "#2563eb",
     kind: "law",
   },
   {
@@ -45,6 +48,7 @@ export const baseFeatures: Feature[] = [
     desc: "현장 데이터 분석 후 위험성평가 문서 초안 생성",
     icon: IconMicroscope,
     tone: "bg-amber-50 text-amber-700 border-amber-100",
+    accent: "#d97706",
     kind: "risk",
   },
   {
@@ -53,6 +57,7 @@ export const baseFeatures: Feature[] = [
     desc: "AED 사진 또는 명칭으로 장비 규격과 사용법 안내자료 조회",
     icon: IconFirstAidKit,
     tone: "bg-rose-50 text-rose-700 border-rose-100",
+    accent: "#e11d48",
     kind: "aed",
   },
   {
@@ -61,6 +66,7 @@ export const baseFeatures: Feature[] = [
     desc: "작업 자세와 증상 데이터를 분석해 인간공학적 개선대책 보고서 생성",
     icon: IconActivityHeartbeat,
     tone: "bg-violet-50 text-violet-700 border-violet-100",
+    accent: "#7c3aed",
     kind: "ergonomic",
   },
   {
@@ -69,6 +75,7 @@ export const baseFeatures: Feature[] = [
     desc: "안전보건 질문을 대화형으로 해결하는 챗봇 연결 화면",
     icon: IconMessageChatbot,
     tone: "bg-teal-50 text-teal-700 border-teal-100",
+    accent: "#008C8C",
     kind: "chatbot",
   },
 ];
@@ -97,8 +104,12 @@ export function FeatureThumb({ feature, compact = false }: { feature: Feature; c
   const Icon = feature.icon;
 
   return (
-    <div className={`${compact ? "h-16 w-16" : "aspect-[4/3] w-full"} grid place-items-center rounded-xl border ${feature.tone}`}>
-      <Icon size={compact ? 31 : 42} stroke={1.7} />
+    <div className={`${compact ? "h-16 w-16 rounded-2xl" : "aspect-[4/3] w-full rounded-2xl"} relative grid place-items-center overflow-hidden border ${feature.tone}`}>
+      <div className="absolute inset-0 opacity-70" style={{ background: `radial-gradient(circle at 25% 20%, ${feature.accent}22, transparent 34%), linear-gradient(135deg, #ffffff, ${feature.accent}0f)` }} />
+      <div className="absolute right-3 top-3 h-8 w-8 rounded-full bg-white/70" />
+      <span className={`${compact ? "h-11 w-11" : "h-14 w-14"} relative grid place-items-center rounded-2xl bg-white shadow-sm ring-1 ring-black/5`} style={{ color: feature.accent }}>
+        <Icon size={compact ? 27 : 34} stroke={1.8} />
+      </span>
     </div>
   );
 }

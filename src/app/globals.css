@@ -80,6 +80,69 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@keyframes svcFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes svcSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes svcScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes svcPulseSoft {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 140, 140, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 140, 140, 0.08);
+  }
+}
+
+.svc-animate-up {
+  animation: svcFadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.svc-animate-slide {
+  animation: svcSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.svc-animate-scale {
+  animation: svcScaleIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.svc-animate-pulse {
+  animation: svcPulseSoft 2.4s ease-in-out infinite;
+}
+
+.svc-delay-1 { animation-delay: 0.06s; }
+.svc-delay-2 { animation-delay: 0.12s; }
+.svc-delay-3 { animation-delay: 0.18s; }
+.svc-delay-4 { animation-delay: 0.24s; }
+
 /* SafeBuddy dashboard brand palette */
 .safebuddy-console .bg-teal-50 { background-color: #e8fbfa !important; }
 .safebuddy-console .bg-teal-100 { background-color: #d1f6f3 !important; }
