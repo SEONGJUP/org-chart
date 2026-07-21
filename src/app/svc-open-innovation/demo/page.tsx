@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { IconArrowLeft, IconArrowUpRight, IconChevronLeft, IconPlus, IconSparkles } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowUpRight, IconChevronLeft, IconPlus, IconSparkles, IconWand, IconX } from "@tabler/icons-react";
 import { BRAND, baseFeatures, featureHref, Feature, FeatureThumb, STORAGE_KEY } from "./_data";
 
 export default function SvcOpenInnovationDemoPage() {
   const [customFeatures, setCustomFeatures] = useState<Feature[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [newFeatureName, setNewFeatureName] = useState("");
   const features = useMemo(() => [...baseFeatures, ...customFeatures], [customFeatures]);
 
   useEffect(() => {
@@ -28,9 +30,18 @@ export default function SvcOpenInnovationDemoPage() {
     }
   }, []);
 
+  const openAddModal = () => {
+    setNewFeatureName("");
+    setIsAddModalOpen(true);
+  };
+
+  const closeAddModal = () => {
+    setIsAddModalOpen(false);
+    setNewFeatureName("");
+  };
+
   const addFeature = () => {
-    const name = window.prompt("추가할 AI 기능 이름을 입력하세요.");
-    const trimmed = name?.trim();
+    const trimmed = newFeatureName.trim();
     if (!trimmed) return;
 
     const next = [
@@ -50,6 +61,7 @@ export default function SvcOpenInnovationDemoPage() {
       STORAGE_KEY,
       JSON.stringify(next.map(({ id, title, desc }) => ({ id, title, desc }))),
     );
+    closeAddModal();
   };
 
   return (
@@ -80,7 +92,7 @@ export default function SvcOpenInnovationDemoPage() {
               공동과제에서 확장할 AI 기능들을 버튼형 허브로 구성했습니다. 기능 버튼을 선택하면 해당 기능 전용 페이지로 이동합니다.
             </p>
           </div>
-          <button onClick={addFeature} className="inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800">
+          <button data-testid="open-add-feature-modal" onClick={openAddModal} className="inline-flex h-12 items-center gap-2 rounded-2xl bg-slate-950 px-5 text-sm font-black text-white shadow-lg shadow-slate-900/10 transition hover:-translate-y-0.5 hover:bg-slate-800">
             <IconPlus size={18} /> 기능 추가
           </button>
           </div>
@@ -104,7 +116,7 @@ export default function SvcOpenInnovationDemoPage() {
             </Link>
           ))}
 
-          <button onClick={addFeature} className="svc-animate-scale min-h-[190px] rounded-3xl border-2 border-dashed border-slate-300 bg-white p-3 text-left transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:bg-teal-50/50 hover:shadow-xl hover:shadow-teal-900/5">
+          <button data-testid="open-add-feature-card" onClick={openAddModal} className="svc-animate-scale min-h-[190px] rounded-3xl border-2 border-dashed border-slate-300 bg-white p-3 text-left transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:bg-teal-50/50 hover:shadow-xl hover:shadow-teal-900/5">
             <div className="grid aspect-[4/3] place-items-center rounded-2xl bg-slate-50 text-slate-400">
               <IconPlus size={34} />
             </div>
@@ -113,6 +125,69 @@ export default function SvcOpenInnovationDemoPage() {
           </button>
         </div>
       </section>
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true">
+          <div className="svc-animate-scale w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-2xl shadow-slate-950/20">
+            <div className="relative border-b border-slate-100 p-6">
+              <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-full bg-teal-50" />
+              <div className="relative flex items-start justify-between gap-4">
+                <div className="flex gap-4">
+                  <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-teal-50 text-teal-700 ring-1 ring-teal-100">
+                    <IconWand size={25} />
+                  </span>
+                  <div>
+                    <p className="text-xs font-black tracking-[0.16em] text-teal-700">ADD AI FUNCTION</p>
+                    <h2 className="mt-1 text-2xl font-black text-slate-950">새 기능 추가</h2>
+                    <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
+                      추후 연결할 AI 안전보건 기능 이름을 입력하면 같은 규격의 버튼으로 저장됩니다.
+                    </p>
+                  </div>
+                </div>
+                <button onClick={closeAddModal} className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50">
+                  <IconX size={18} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <label className="text-xs font-black tracking-[0.14em] text-slate-400">기능 이름</label>
+              <input
+                autoFocus
+                data-testid="add-feature-name-input"
+                value={newFeatureName}
+                onChange={(event) => setNewFeatureName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") addFeature();
+                  if (event.key === "Escape") closeAddModal();
+                }}
+                placeholder="예: 밀폐공간 작업허가서 자동 작성"
+                className="mt-2 h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 text-base font-bold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-400 focus:bg-white focus:shadow-lg focus:shadow-teal-900/5"
+              />
+              <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                <p className="text-sm font-black text-slate-700">저장 후 표시 방식</p>
+                <p className="mt-1 text-sm font-semibold leading-6 text-slate-500">
+                  기능 허브 하단에 버튼이 추가되고, 브라우저 로컬 저장소에 유지됩니다.
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <button onClick={closeAddModal} className="h-12 rounded-2xl border border-slate-200 bg-white px-5 text-sm font-black text-slate-600 transition hover:bg-slate-50">
+                  취소
+                </button>
+                <button
+                  onClick={addFeature}
+                  data-testid="save-add-feature"
+                  disabled={!newFeatureName.trim()}
+                  className="h-12 rounded-2xl px-5 text-sm font-black text-white shadow-lg shadow-teal-700/15 transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+                  style={{ backgroundColor: newFeatureName.trim() ? BRAND : undefined }}
+                >
+                  저장하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
