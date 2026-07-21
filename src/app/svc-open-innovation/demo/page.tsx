@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { IconArrowLeft, IconArrowUpRight, IconPlus, IconSparkles } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowUpRight, IconChevronLeft, IconPlus, IconSparkles } from "@tabler/icons-react";
 import { BRAND, baseFeatures, featureHref, Feature, FeatureThumb, STORAGE_KEY } from "./_data";
 
 export default function SvcOpenInnovationDemoPage() {
@@ -56,9 +56,14 @@ export default function SvcOpenInnovationDemoPage() {
     <main className="min-h-screen bg-[#f6fbfb] text-slate-950">
       <section className="border-b border-teal-100 bg-white/95">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4 md:px-8">
-          <Link href="/svc-open-innovation" className="inline-flex h-10 items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 text-sm font-black transition hover:bg-white" style={{ color: BRAND }}>
-            <IconArrowLeft size={18} /> SVC 오픈이노베이션
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => window.history.back()} className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-black text-slate-600 transition hover:bg-slate-50">
+              <IconChevronLeft size={18} /> 이전 페이지
+            </button>
+            <Link href="/svc-open-innovation" className="inline-flex h-10 items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-4 text-sm font-black transition hover:bg-white" style={{ color: BRAND }}>
+              <IconArrowLeft size={18} /> SVC 오픈이노베이션
+            </Link>
+          </div>
           <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-black text-teal-700 ring-1 ring-teal-100">
             AI Function Lab
           </span>
