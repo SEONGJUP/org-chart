@@ -21,7 +21,7 @@ import {
   IconUpload,
   IconX,
 } from "@tabler/icons-react";
-import { baseFeatures, BRAND, Feature, FeatureThumb, lawLinks, sampleSummary } from "../_data";
+import { baseFeatures, BRAND, contentHistoryItems, Feature, FeatureThumb, HistoryItem, lawLinks, sampleSummary } from "../_data";
 
 type Stage = "input" | "analyzed" | "editing" | "confirmed" | "output";
 
@@ -89,7 +89,11 @@ export default function FeatureDetailPage() {
   const [textInput, setTextInput] = useState("");
   const [summary, setSummary] = useState(feature ? sampleSummary[feature.kind] : "");
   const [confirmed, setConfirmed] = useState(false);
-  const [selectedHistory, setSelectedHistory] = useState<(typeof historyItems)[number] | null>(null);
+  const [selectedHistory, setSelectedHistory] = useState<HistoryItem | null>(null);
+  const featureHistoryItems = useMemo(
+    () => (feature ? contentHistoryItems.filter((item) => item.kind === feature.kind) : []),
+    [feature],
+  );
 
   if (!feature) notFound();
 
@@ -175,7 +179,7 @@ export default function FeatureDetailPage() {
           )}
         </div>
 
-        <HistoryList onSelect={setSelectedHistory} />
+        <HistoryList items={featureHistoryItems} featureTitle={feature.title} onSelect={setSelectedHistory} />
       </section>
       {selectedHistory && <HistoryModal item={selectedHistory} onClose={() => setSelectedHistory(null)} />}
     </main>
@@ -464,24 +468,29 @@ function InfoBlock({ title, text }: { title: string; text: string }) {
   );
 }
 
-function HistoryList({ onSelect }: { onSelect: (item: (typeof historyItems)[number]) => void }) {
+function HistoryList({ items, featureTitle, onSelect }: { items: HistoryItem[]; featureTitle: string; onSelect: (item: HistoryItem) => void }) {
   return (
     <section className="svc-animate-up svc-delay-3 mt-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-black tracking-[0.16em] text-teal-700">CONTENT HISTORY</p>
-          <h2 className="mt-1 text-2xl font-black text-slate-950">AI 기능 콘텐츠 생성 이력</h2>
+          <h2 className="mt-1 text-2xl font-black text-slate-950">{featureTitle} 생성 이력</h2>
           <p className="mt-2 text-sm font-semibold leading-6 text-slate-500">
-            기존에 AI 기능으로 생성했던 표지, 법령 검색, 위험성평가 초안을 확인할 수 있습니다.
+            현재 기능에서 생성한 콘텐츠 이력만 모아 보여줍니다. 전체 이력은 기능 목록 페이지에서 필터링해 확인할 수 있습니다.
           </p>
         </div>
         <span className="inline-flex items-center gap-2 rounded-full bg-slate-50 px-3 py-2 text-xs font-black text-slate-500 ring-1 ring-slate-200">
-          <IconHistory size={16} /> {historyItems.length}건
+          <IconHistory size={16} /> {items.length}건
         </span>
       </div>
 
       <div className="mt-5 grid gap-3">
-        {historyItems.map((item) => (
+        {items.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm font-bold text-slate-500">
+            아직 이 기능으로 생성된 콘텐츠 이력이 없습니다.
+          </div>
+        )}
+        {items.map((item) => (
           <button
             key={item.id}
             onClick={() => onSelect(item)}
@@ -506,7 +515,7 @@ function HistoryList({ onSelect }: { onSelect: (item: (typeof historyItems)[numb
   );
 }
 
-function HistoryModal({ item, onClose }: { item: (typeof historyItems)[number]; onClose: () => void }) {
+function HistoryModal({ item, onClose }: { item: HistoryItem; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true">
       <div className="svc-animate-scale max-h-[90vh] w-full max-w-2xl overflow-auto rounded-3xl bg-white shadow-2xl shadow-slate-950/20">

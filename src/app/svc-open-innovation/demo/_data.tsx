@@ -23,6 +23,17 @@ export type Feature = {
   kind: FeatureKind;
 };
 
+export type HistoryItem = {
+  id: string;
+  title: string;
+  type: string;
+  kind: FeatureKind;
+  date: string;
+  status: string;
+  summary: string;
+  detail: string;
+};
+
 export const baseFeatures: Feature[] = [
   {
     id: "msds-label",
@@ -94,6 +105,69 @@ export const lawLinks = [
   { title: "산업안전보건법", href: "https://www.law.go.kr/법령/산업안전보건법", desc: "사업주 안전보건 조치, 교육, 관리체계 기본 법령" },
   { title: "산업안전보건기준에 관한 규칙", href: "https://www.law.go.kr/법령/산업안전보건기준에관한규칙", desc: "사다리, 비계, 개구부, 화기작업 등 작업 기준 검색" },
   { title: "화학물질의 분류·표시 및 물질안전보건자료에 관한 기준", href: "https://www.law.go.kr/행정규칙/화학물질의분류·표시및물질안전보건자료에관한기준", desc: "MSDS, GHS 표시, 경고표지 관련 기준" },
+];
+
+export const contentHistoryItems: HistoryItem[] = [
+  {
+    id: "hist-msds-001",
+    title: "에폭시 프라이머 MSDS 경고표지",
+    type: "MSDS 경고표지",
+    kind: "msds",
+    date: "2026.07.22",
+    status: "인쇄 대기",
+    summary: "물질명, 신호어, 주요 유해위험 문구, 예방조치, 응급조치 항목을 추출해 A4 게시용 경고표지 초안을 생성했습니다.",
+    detail: "에폭시 프라이머 취급 작업 기준으로 인화성 액체, 피부 자극, 흡입 유해 항목을 반영했습니다. 현장 게시 전 물질명과 제조사 정보를 확인해야 합니다.",
+  },
+  {
+    id: "hist-law-001",
+    title: "개구부 주변 이동 작업 법령 검색",
+    type: "안전작업 법령",
+    kind: "law",
+    date: "2026.07.21",
+    status: "검색 완료",
+    summary: "개구부, 추락방지, 안전난간, 출입통제 관련 법령과 자체 점검 항목을 검색했습니다.",
+    detail: "산업안전보건기준에 관한 규칙의 추락 방지 조치, 개구부 덮개 및 안전난간 관련 기준을 우선 검색 대상으로 추천했습니다.",
+  },
+  {
+    id: "hist-risk-001",
+    title: "사석장 도포 작업 위험성평가",
+    type: "위험성평가",
+    kind: "risk",
+    date: "2026.07.20",
+    status: "초안 생성",
+    summary: "환기 부족, 보호구 미착용, 도포 용기 표시 누락을 주요 위험요인으로 평가했습니다.",
+    detail: "발생가능성은 중간, 중대성은 높음으로 분류했습니다. 방독마스크 착용, 환기팬 배치, 도포 용기 라벨 부착을 개선대책으로 제안했습니다.",
+  },
+  {
+    id: "hist-aed-001",
+    title: "현장 사무실 AED 사용법 자료",
+    type: "AED 교육",
+    kind: "aed",
+    date: "2026.07.19",
+    status: "자료 확인",
+    summary: "AED 모델명을 기준으로 패드 부착 위치, 음성 안내 순서, 심폐소생술 병행 절차를 정리했습니다.",
+    detail: "현장 사무실에 비치된 자동심장충격기 교육자료를 조회하는 흐름으로 구성했습니다. 실제 장비 모델 확인 후 제조사 자료 링크를 연결할 예정입니다.",
+  },
+  {
+    id: "hist-ergonomic-001",
+    title: "반복 조립 작업 근골격계 분석",
+    type: "근골격계 AI 분석",
+    kind: "ergonomic",
+    date: "2026.07.18",
+    status: "보고서 생성",
+    summary: "허리 굴곡, 손목 반복 동작, 장시간 정적 자세를 중심으로 인간공학적 개선대책을 제안했습니다.",
+    detail: "작업대 높이 조정, 보조 지그 사용, 순환근무, 증상 설문 추가 확인을 개선대책으로 정리했습니다.",
+  },
+  {
+    id: "hist-chatbot-001",
+    title: "보호구 착용 기준 챗봇 상담",
+    type: "AI 안전보건 챗봇",
+    kind: "chatbot",
+    date: "2026.07.17",
+    status: "대화 저장",
+    summary: "작업 유형별 보호구 착용 기준과 MSDS 확인 필요 항목을 대화형으로 안내했습니다.",
+    detail: "추후 실제 챗봇 서버와 연결되면 상담 로그, 참조 문서, 후속 조치 요청을 함께 확인할 수 있습니다.",
+  },
 ];
 
 export function featureHref(id: string) {
