@@ -72,6 +72,33 @@ export default function IndexPage() {
           </Link>
 
           <Link
+            href="/svc-open-innovation"
+            className="group relative flex items-center gap-6 bg-white rounded-2xl border border-emerald-200 hover:border-emerald-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 hover:-translate-y-0.5"
+          >
+            <div className="relative w-14 h-14 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0 transition-colors group-hover:bg-emerald-100">
+              <svg className="w-7 h-7 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5m4.75-11.396a24.301 24.301 0 014.5 0m0 0v5.714a2.25 2.25 0 00.659 1.591L19 14.5M5 14.5l2.47 2.47c.422.421.994.659 1.59.659h5.88c.596 0 1.168-.238 1.59-.659L19 14.5m-14 0h14" />
+              </svg>
+            </div>
+            <div className="relative flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 group-hover:text-emerald-700 transition-colors">
+                  SVC 오픈이노베이션
+                </h2>
+                <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-700 border border-emerald-100">
+                  MVP
+                </span>
+              </div>
+              <p className="mt-1 text-gray-500 text-[15px]">
+                산업현장 MSDS 경고표지 자동 생성과 사진 기반 위험요인 인식 체험 페이지
+              </p>
+            </div>
+            <svg className="relative w-6 h-6 text-gray-300 group-hover:text-emerald-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+
+          <Link
             href="/half-year-inspection"
             className="group relative flex items-center gap-6 bg-white rounded-2xl border border-blue-200 hover:border-blue-400 p-6 md:p-8 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-0.5"
           >
